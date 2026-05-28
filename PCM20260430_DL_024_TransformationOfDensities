@@ -36,7 +36,7 @@ md"
 ====================================================================================
 #### MMLD: DeepLearning, ch.02.4 Transformation Of Densities
 ##### file: PCM20260430\_DL\_02.4\_TransformationOfDensities
-##### Julia/Pluto.jl: 1.12.6/0.20.4 by PCM *** 2026/05/27 ***
+##### Julia/Pluto.jl: 1.12.6/0.20.4 by PCM *** 2026/05/28 ***
 ====================================================================================
 "
 
@@ -481,21 +481,22 @@ $f_Y(y) \simeq f_X(x)\cdot\left|\frac{\delta x}{\delta y}\right|.$
 
 Taking the limit
 
-$\lim_{\delta x \to 0} \left(f_Y(y) \simeq f_X(x)\cdot\left|\frac{\delta x}{\delta y}\right|\right) \Rightarrow f_Y(y) = f_X(x)\left|\frac{dx}{dy}\right|=$
+$\lim_{\delta x \to 0} \left(f_Y(y) \simeq f_X(x)\cdot\left|\frac{\delta x}{\delta y}\right|\right) \Rightarrow f_Y(y) = f_X(x)\left|\frac{dx}{dy}\right|$
 
-$= f_X(g^{-1}(y))\left|\frac{dg^{-1}(y)}{dy}\right| = f_X(g^{-1}(y))\left|(g^{-1})'(y)\right|\tag{cf. DLFC, (2.71)}.$
+$f_Y(y) = f_X(g^{-1}(y))\left|\frac{dg^{-1}(y)}{dy}\right|$ 
+$f_Y(y) = f_X(g^{-1}(y))\left|(g^{-1})'(y)\right|\tag{cf. DLFC, (2.71)}.$
 
 The expression $\left|\frac{dx}{dy}\right|$ is known as the [*Jacobian determinant*](https://en.wikipedia.org/wiki/Jacobian_matrix_and_determinant). The *Jacobian* is *correction* factor, which scales the density *by the ratio of lengths* (Bishop & Bishop, 2024, p.42).
 
 "
 
 # ╔═╡ 9db11048-f743-4fd6-9374-d920df3e6398
-# f_X(y) without correction factor
+# f_X(g^{-1}(y)) without correction factor
 fX_gInv(ys) = pdf.(Normal(modeX, σX), gInv.(ys))  # density without correction factor
 
 # ╔═╡ a679883f-c97c-41f4-8333-41b0b998099b
-# f_Y(y) includng correction factor               # density wit correction factor
-fY_gInv(ys) = pdf.(Normal(modeX, σX), gInv.(ys)) .* abs.(1.0 ./(ys .- ys.^2))
+# f_Y(y) includng correction factor               # density incl. correction factor
+fY(ys) = pdf.(Normal(modeX, σX), gInv.(ys)) .* abs.(1.0 ./(ys .- ys.^2))
 
 # ╔═╡ 54f2f90b-ed2a-498c-9f23-a446ee403981
 md"
@@ -548,7 +549,7 @@ let	randomXs         = randn(nSamples).+ modeX
 			#----------------------------------------------------------------------
 			# density f_Y(y)=f_X(g^{-1}(y);μ_X, σ_X)\left|\frac{1}{y-y^2}\right|
 			plot!(title=L"f_Y(y)=f_X(g^{-1}(y);μ_X, σ_X)\left|\frac{1}{y-y^2}\right|", titlefontsize=titlefontsize, 
-			ys, fY_gInv(ys), xlabel=L"Y\ \ (=P)", ylabel=L"X",
+			ys, fY(ys), xlabel=L"Y\ \ (=P)", ylabel=L"X",
 			permute=(:y, :x), color=:red, linewidth=linewidth, legendfontsize=legendfontsize, label=L"f_Y(y)")			
 			annotate!(0.5, 0.14, text(L"f_{Y}(y)", annotateFontSize))
 		end # let
@@ -559,7 +560,8 @@ end # let
 # ╔═╡ ab462070-74e3-4f16-b1e3-d119418ee376
 md"
 ---
-###### 3.10 *PMF* $p_Y$ and *PDF* $f_Y$
+###### 3.10 Projection of Guesses $f_{2Y}(y), f_{3Y}(y), f_{4Y}(y)$ and *PDF* $f_Y(y)$ into *PMF* (=Histogram) Space
+
 This is a reconstruction of *fig. 2.12* from Bishop % Bishop (2024, p.44). The focus is on the plot of transformed density $f_Y(y) (:red)$. Unlike *fig.2.12* we have added the guesses $f_{2Y}(y) (:lightgreen), f_{3Y}(y) (:orange), \text{ and } f_{4Y}(y) (:blueviolet)$.
 
 "
@@ -639,7 +641,7 @@ function Bishop2023_DLFig2Dot122()
 	annotate!(0.6, 1.03, text(L"f_{4Y}(y)", annotateFontSize))
 	#--------------------------------------------------------------------------
 	# correct transformed density f_Y(y)
-	plot!(ys, fY_gInv(ys), permute=(:y, :x), 
+	plot!(ys, fY(ys), permute=(:y, :x), 
 	color=:red, linewidth=linewidth+1, label=L"f_Y(y)")
 	annotate!(0.7, 0.4, text(L"f_Y(y)", annotateFontSize))
 	annotate!(3.7, 0.95, text(L"f_Y(y)", annotateFontSize))
@@ -685,8 +687,8 @@ $f'_Y(g^{-1}(y)) := fY\_gInvD(y) = ForwardDiff.derivative(fY\_gInv, y).$
 "
 
 # ╔═╡ 59aa3f7b-072d-4940-b8cb-267b9c8428d0
-# numerical derivative f'_Y(g^{-1}(y))
-fY_gInvD(y) = ForwardDiff.derivative(fY_gInv, y) 
+# numerical derivative f'_Y(y)
+fYD(y) = ForwardDiff.derivative(fY, y) 
 
 # ╔═╡ 41d04cb0-bef5-4a97-9538-b04f42fe3ee1
 md"The two figures below display $argmax(f_Y(g^{-1}(y))$ (left) and $argmax(f_Y(g^{-1}(y))$, $f'_Y(g^{-1}(y)) = 0$ (right). 
@@ -701,26 +703,26 @@ let ys       =   0.02:Δy:0.98
 	legendfontsize   = 10
 	linewidth = 2
 	#-------------------------------------------------------------------------------
-	pl1 = plot(title=L"transfomed\;\;density\ f_Y(g^{-1}(y))", titlefontsize=titlefontsize,  color=:red, linewidth=linewidth, permute=(:x, :y),
-			   ys, fY_gInv(ys), legendfontsize=legendfontsize, label=false)
-	plot!(x2s, x -> ys[argmax(fY_gInv.(ys))], linewidth=linewidth, color=:green,
-			label=L"x \rightarrow ys\left[argmax(fY_gInv)\right]")
-	println("argmax(fY_gInv.(ys))           = ", argmax(fY_gInv.(ys)))
-	println("ys[argmax(fY_gInv.(ys))]       = ", ys[argmax(fY_gInv.(ys))])
-	println("fY(ys[argmax(fY_gInv.(ys))])   = ", fY_gInv(ys[argmax(fY_gInv.(ys))]))
-	annotate!(1.9, 0.93, text(L"ys[argmax(f_Y(g^{-1}.(ys))]       = 0.91", annotateFontSize))
+	pl1 = plot(title=L"transfomed\;\;density\ f_Y(y)", titlefontsize=titlefontsize,  color=:red, linewidth=linewidth, permute=(:x, :y),
+			   ys, fY(ys), legendfontsize=legendfontsize, label=false)
+	plot!(x2s, x -> ys[argmax(fY.(ys))], linewidth=linewidth, color=:green,
+			label=L"x \rightarrow ys\left[argmax(fY)\right]")
+	println("argmax(fY.(ys))           = ", argmax(fY.(ys)))
+	println("ys[argmax(fY.(ys))]       = ", ys[argmax(fY.(ys))])
+	println("fY(ys[argmax(fY.(ys))])   = ", fY(ys[argmax(fY.(ys))]))
+	annotate!(1.9, 0.93, text(L"ys[argmax(f_Y.(ys)]       = 0.91", annotateFontSize))
 	#-------------------------------------------------------------------------------
-	pl2 = plot(title=L"derivative\ of\ density\ f'_Y(g^{-1}(y))", 		    titlefontsize=titlefontsize, label=false, linewidth=linewidth,
-			   ys, fY_gInvD.(ys), legendfontsize=legendfontsize, color=:magenta, permute=(:x, :y))
-	plot!(xs, x -> ys[argmax(fY_gInv.(ys))], linewidth=linewidth, color=:green,
-			label=L"x \rightarrow ys\left[argmax(fY_gInv)\right]")
-	plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linewidth=linewidth, label=L"f'_Y(g^{-1}(y)) = 0")
-	annotate!(-39.5, 0.93, text(L"ys[argmax(f_Y(gInv.(ys))] = 0.91", annotateFontSize))
+	pl2 = plot(title=L"derivative\ of\ density\ f'_Y(y)", 		    titlefontsize=titlefontsize, label=false, linewidth=linewidth,
+			   ys, fYD.(ys), legendfontsize=legendfontsize, color=:magenta, permute=(:x, :y))
+	plot!(xs, x -> ys[argmax(fY.(ys))], linewidth=linewidth, color=:green,
+			label=L"x \rightarrow ys\left[argmax(fY)\right]")
+	plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linewidth=linewidth, label=L"f'_Y(y) = 0")
+	annotate!(-39.5, 0.93, text(L"ys[argmax(f_Y.(ys)] = 0.91", annotateFontSize))
 	# ==> 0 --> :)
-	println("fYD(ys[argmax(fY_gInv.(ys))])  = ", fY_gInvD(ys[argmax(fY_gInv.(ys))])) 
+	println("fYD(ys[argmax(fY.(ys))])  = ", fYD(ys[argmax(fY.(ys))])) 
 	# ==> 0 --> :)
-	println("fYD(ys[argmax(fY_gInv.(ys))])  = ", fY_gInvD(0.91))                
-	println("gInv(ys[argmax(fY_gInv.(ys))]) = ", gInv(ys[argmax(fY_gInv.(ys))])) 
+	println("fYD(ys[argmax(fY.(ys))])  = ", fYD(0.91))                
+	println("gInv(ys[argmax(fY.(ys))]) = ", gInv(ys[argmax(fY.(ys))])) 
 		                                                          # ==> 7.31 --> :(
 	#-------------------------------------------------------------------------------
 	plot(pl1, pl2, layout=(1, 2))
@@ -768,21 +770,21 @@ function Bishop2023_DLFig2Dot123()
 	annotate!(3.9, 0.85, text(L"pmf\ p_Y", annotateFontSize))
 	#----------------------------------------------------------------------------
 	# mode marker line: vertical up from modeX to logistic sigmoid
-	plot!([modeX, modeX], [0.0, ys[argmax(fY_gInv.(ys))]], ls=:dash, linewidth=linewidth-2, color=:darkblue, label=false) 
+	plot!([modeX, modeX], [0.0, ys[argmax(fY.(ys))]], ls=:dash, linewidth=linewidth-2, color=:darkblue, label=false) 
 	# mode marker line: horizontal from logistic sigmoid to modeY
-	plot!([modeX, 0.0], [g(modeX), g(modeX)], ls =:dash, llinewidth=linewidth-2, color=:darkblue, label=false)  
+	plot!([modeX, 0.0], [g(modeX), g(modeX)], ls =:dash, linewidth=linewidth-2, color=:darkblue, label=false)  
 	#----------------------------------------------------------------------------
 	# new marker line:
-	plot!([0.0, modeX], [ys[argmax(fY_gInv.(ys))], ys[argmax(fY_gInv.(ys))]], linewidth=linewidth-1.5, ls=:dash, color=:orangered2, label=L"x \rightarrow ys\left[argmax(fY_gInv.(ys))\right]")
-	println("argmax(fY_gInv.(ys)) = ", argmax(fY_gInv.(ys)))
-	println("ys[argmax(fY_gInv.(ys))] = ", ys[argmax(fY_gInv.(ys))])
-	println("fY(ys[argmax(fY_gInv.(ys))]) = ", fY_gInv(ys[argmax(fY_gInv.(ys))]))
-	annotate!(5.1, 0.93, text(L"ys[argmax(fY\_gInv.(ys))] = 0.91", annotateFontSize))
+	plot!([0.0, modeX], [ys[argmax(fY.(ys))], ys[argmax(fY.(ys))]], linewidth=linewidth-1.5, ls=:dash, color=:orangered2, label=L"x \rightarrow ys\left[argmax(fY.(ys))\right]")
+	println("argmax(fY.(ys)) = ", argmax(fY.(ys)))
+	println("ys[argmax(fY.(ys))] = ", ys[argmax(fY.(ys))])
+	println("fY(ys[argmax(fY.(ys))]) = ", fY(ys[argmax(fY.(ys))]))
+	annotate!(5.1, 0.93, text(L"ys[argmax(fY.(ys))] = 0.91", annotateFontSize))
 	#----------------------------------------------------------------------------
 	# mode markers
 	plot!([modeX], [0.0], marker=:diamond, color=:red, markersize=markersize, label=L"mode(X)")                                                     # modeX 
 	plot!([0.0], [g(modeX)], marker=:diamond, color=:orange, markersize=markersize, label=L"biased\ mode(Y)")  
-	plot!([0.0], [ys[argmax(fY_gInv.(ys))]], marker=:diamond, color=:orangered2, markersize=markersize, label=L"mode(Y)")  
+	plot!([0.0], [ys[argmax(fY.(ys))]], marker=:diamond, color=:orangered2, markersize=markersize, label=L"mode(Y)")  
 	#---------------------------------------------------------------------------
 	# PDFs
 	gaussNX     = Normal(modeX, 1)                   # standard Gaussian N(x;0,1)
@@ -813,7 +815,7 @@ function Bishop2023_DLFig2Dot123()
 	annotate!(0.6, 1.03, text(L"f_{4Y}(y)", annotateFontSize))
 	#--------------------------------------------------------------------------
 	# correct transformed density f_Y(y)
-	plot!(ys, fY_gInv(ys), permute=(:y, :x), color=:red, linewidth=linewidth+1, label=L"f_Y(y)")
+	plot!(ys, fY(ys), permute=(:y, :x), color=:red, linewidth=linewidth+1, label=L"f_Y(y)")
 	annotate!(0.7, 0.4, text(L"f_Y(y)", annotateFontSize))
 	annotate!(3.7, 0.98, text(L"f_Y(y)", annotateFontSize))
 end # Bishop2023_DLFig2Dot123()
@@ -915,30 +917,29 @@ function derivatives()
 	linewidth        = 2.0
 	markersize       = 14
 	#--------------------------------------------------------------------------------
-	# pl1: density f_Y(y) = f_Y(g^{-1}(y))
-	fY(ys)          = fY_gInv(ys)
+	# pl1: density f_Y(y)
 	#--------------------------------------------------------------------------------
 	# derivative f'_Y(y) = f'_Y(g^{-1}(y)
-	fY_gInvD(y)     = ForwardDiff.derivative(fY_gInv, y)     # numeric derivative
+	fYD(y)          = ForwardDiff.derivative(fY, y)     # numeric derivative
 	#--------------------------------------------------------------------------------
 	s(y)            = gInv_SymbD(y)/abs(gInv_SymbD(y))
 	#-----------------------------------------------------------------------------
-	pl1 = plot(title=L"pl1:\ density\ f_Y(g^{-1}(y))", titlefontsize=titlefontsize,  permute=(:x, :y), linewidth=linewidth+1, legendfontsize=legendfontsize,
-	ys, fY_gInv(ys), color=:red, label=L"density\ f_Y(g^{-1}(y))")
+	pl1 = plot(title=L"pl1:\ density\ f_Y(y)", titlefontsize=titlefontsize,  permute=(:x, :y), linewidth=linewidth+1, legendfontsize=legendfontsize,
+	ys, fY(ys), color=:red, label=L"density\ f_Y(y)")
 	#
-	plot!(x2s, x -> ys[argmax(fY_gInv.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"x \rightarrow ys\left[argmax(fY\_gInv(ys))\right]")
+	plot!(x2s, x -> ys[argmax(fY.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"x \rightarrow ys\left[argmax(fY(ys)\right]")
 	#
-	annotate!(1.9, 0.93, text(L"ys[argmax(fY\_gInv.(ys))]       = 0.91", annotateFontSize))
+	annotate!(1.9, 0.93, text(L"ys[argmax(fY.(ys))]       = 0.91", annotateFontSize))
 	#-----------------------------------------------------------------------------
-	pl2 = plot(title=L"pl2:\ deriv.\ of\ density\ f_Y'(g^{-1}(y))", 
-			   ys, fY_gInvD.(ys), permute=(:x, :y), color=:magenta,
-			   titlefontsize=titlefontsize, legendfontsize=legendfontsize, linewidth=linewidth, label=L"derivative\ f_Y'(g^{-1}(y))")
+	pl2 = plot(title=L"pl2:\ deriv.\ of\ density\ f_Y'(y)", 
+			   ys, fYD.(ys), permute=(:x, :y), color=:magenta,
+			   titlefontsize=titlefontsize, legendfontsize=legendfontsize, linewidth=linewidth, label=L"derivative\ f_Y'(y)")
 	#
-	plot!(xs, x -> ys[argmax(fY_gInv.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"x \rightarrow ys\left[argmax(fY_gInv)\right]")
+	plot!(xs, x -> ys[argmax(fY.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"x \rightarrow ys\left[argmax(fY)\right]")
 	#
-	plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linewidth=linewidth-1, linestyle=:dash, label=L"f'_Y(g^{-1}(y))=0")
+	plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linewidth=linewidth-1, linestyle=:dash, label=L"f'_Y(y)=0")
 	#
-	annotate!(-40, 0.93, text(L"ys[argmax(fY_gInv.(ys))] = 0.91", annotateFontSize))
+	annotate!(-40, 0.93, text(L"ys[argmax(fY.(ys)] = 0.91", annotateFontSize))
 	#-----------------------------------------------------------------------------
 	pl3 = 
 		plot(ys, gInv.(ys), title=L"pl3_1: g^{-1}(y) = logit\ transformation\ of\ Y", titlefontsize=titlefontsize, legendfontsize=legendfontsize, color=:orange, permute=(:x, :y), linewidth=linewidth+2, label=L"pl3_1: g^{-1}(y) = logit\ transformation\ of\ Y")
@@ -996,8 +997,8 @@ function resultDensities()
 	xlimits       = (-0.001, 1.14)
 	size          = (800, 800)
 	#--------------------------------------------------------------------------------
-	# derivative f'_Y(y) = f'_Y(g^{-1}(y)
-	fY_gInvD(y)   = ForwardDiff.derivative(fY_gInv, y)   # result) numeric derivative
+	# derivative f'_Y(y)
+	fYD(y)   = ForwardDiff.derivative(fY, y)   # result) numeric derivative
 	#--------------------------------------------------------------------------------
 	plot(ys, fX_gInv(ys), title=L"c)f_X((g^{-1})(y)):=fX\_gInv.(ys); result)\ f_Y((g^{-1})(y))=:fY\_gInv.(ys)", titlefontsize=titlefontsize, permute=(:x, :y), ylimits=ylimits, xlimits=xlimits, color=:blueviolet, linewidth=linewidth, label = L"c)\ density\ f_X(g^{-1}(y)) := fX\_gInv.(ys)")
 	#
@@ -1007,13 +1008,13 @@ function resultDensities()
 	#------------------------------------------------------------------------
 	plot!(ys, fX_gInvD.(ys), color=:blueviolet, permute=(:x, :y), linewidth=linewidth-1, label=L"a)\ derivative\ f'_X(g^{-1}(y))")
 	#--------------------------------------------------------------------------------
-	println("modeY = ", ys[argmax(fY_gInv.(ys))])
+	println("mode(Y) = ", ys[argmax(fY.(ys))])
 	#--------------------------------------------------------------------------------
-	plot!(ys, fY_gInv.(ys), permute=(:x, :y), color=:red, linewidth=linewidth, label=L"result\ density\ f_Y(g^{-1}(y)):=fY\_gInv.(ys)")
+	plot!(ys, fY.(ys), permute=(:x, :y), color=:red, linewidth=linewidth, label=L"result\ density\ f_Y(g^{-1}(y)):=fY\_gInv.(ys)")
 	#
-	plot!(ys, fY_gInvD.(ys), permute=(:x, :y), color=:red, linewidth=linewidth-2, label=L"a)result\ derivative\ f'_Y(g^{-1}(y)):=fY\_gInvD.(ys)")
+	plot!(ys, fYD.(ys), permute=(:x, :y), color=:red, linewidth=linewidth-2, label=L"a)result\ derivative\ f'_Y(g^{-1}(y)):=fY\_gInvD.(ys)")
 	#
-	plot!(x2s, x -> ys[argmax(fY_gInv.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"x -> argmax(f_Y(g^{-1}(y)))")
+	plot!(x2s, x -> ys[argmax(fY.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"x -> argmax(f_Y(g^{-1}(y)))")
 	#--------------------------------------------------------------------------------
 end # function resultDensities()
 
@@ -3061,7 +3062,7 @@ version = "1.13.0+0"
 # ╟─e60fb090-ea7b-4f27-8bb3-e4d9704f09d3
 # ╠═a2aa8846-e540-4403-9da9-ad12b0622859
 # ╟─9f52849a-621e-4e8e-a5a5-d711e301c617
-# ╟─064fbc16-56d1-416e-90c0-24a60ebeaba0
+# ╠═064fbc16-56d1-416e-90c0-24a60ebeaba0
 # ╟─2201195a-bc2d-4286-a580-81154bf64e87
 # ╠═ab3ab979-0027-4a6c-a85a-d3ea8834aa19
 # ╟─a053117f-f2ff-49c0-9c7e-6f465a8e5bfb
