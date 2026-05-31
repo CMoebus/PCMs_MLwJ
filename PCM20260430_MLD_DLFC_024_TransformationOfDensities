@@ -689,7 +689,7 @@ md"
 ---
 ###### 3.11 The Computation of $Mode(Y) = \hat Y$
 
-Determination of $mode(Y) = \hat Y$ can be accomplished either by using $argmax(f_Y(y))$ or by solving for the root of the zero-set derivative $f'_Y(y)=0$. In both alternatives we use numeric algorithms and get the value $mode(Y)=0.91$.
+The numerical determination of $mode(Y) = \hat Y$ can be accomplished either by using $argmax(f_Y(y))$ or by solving for the root of the zero-set derivative $f'_Y(y)=0$. By both alternatives we get the value $mode(Y)=0.91$.
 
 For the first alternative we need only the density $f_Y(y)$ and for the second its derivative $f'_Y(y)$.
 
@@ -707,7 +707,7 @@ $f'_Y(y := fYD(y) = ForwardDiff.derivative(fY, y).$
 fYD(y) = ForwardDiff.derivative(fY, y) 
 
 # ╔═╡ 41d04cb0-bef5-4a97-9538-b04f42fe3ee1
-md"The two figures below display $argmax(f_Y(g^{-1}(y))$ (left) and $argmax(f_Y(g^{-1}(y))$, $f'_Y(g^{-1}(y)) = 0$ (right). 
+md"The two figures below display $argmax(f_Y(g^{-1}(y))$ (left) and $argmax(f_Y(g^{-1}(y))$, $f'_Y(g^{-1}(y)) = 0$ (right). $argmax(f_Y(g^{-1}(y))$ crosses the derivative when it is zero.
 "
 
 # ╔═╡ caf643bd-4b8f-4281-9c70-5907451c1790
@@ -721,8 +721,7 @@ let ys       =   0.02:Δy:0.98
 	#-------------------------------------------------------------------------------
 	pl1 = plot(title=L"transfomed\;\;density\ f_Y(y)", titlefontsize=titlefontsize,  color=:red, linewidth=linewidth, permute=(:x, :y),
 			   ys, fY(ys), legendfontsize=legendfontsize, label=false)
-	plot!(x2s, x -> ys[argmax(fY.(ys))], linewidth=linewidth, color=:green,
-			label=L"x \rightarrow ys\left[argmax(fY)\right]")
+	plot!(x2s, x -> ys[argmax(fY.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"x \rightarrow ys\left[argmax(fY)\right]")
 	println("argmax(fY.(ys))           = ", argmax(fY.(ys)))
 	println("ys[argmax(fY.(ys))]       = ", ys[argmax(fY.(ys))])
 	println("fY(ys[argmax(fY.(ys))])   = ", fY(ys[argmax(fY.(ys))]))
@@ -730,9 +729,8 @@ let ys       =   0.02:Δy:0.98
 	#-------------------------------------------------------------------------------
 	pl2 = plot(title=L"derivative\ of\ density\ f'_Y(y)", 		    titlefontsize=titlefontsize, label=false, linewidth=linewidth,
 			   ys, fYD.(ys), legendfontsize=legendfontsize, color=:magenta, permute=(:x, :y))
-	plot!(xs, x -> ys[argmax(fY.(ys))], linewidth=linewidth, color=:green,
-			label=L"x \rightarrow ys\left[argmax(fY)\right]")
-	plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linewidth=linewidth, label=L"f'_Y(y) = 0")
+	plot!(xs, x -> ys[argmax(fY.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"x \rightarrow ys\left[argmax(fY)\right]")
+	plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linewidth=linewidth-1, linestyle=:dash, label=L"f'_Y(y) = 0")
 	annotate!(-39.5, 0.93, text(L"ys[argmax(f_Y.(ys)] = 0.91", annotateFontSize))
 	# ==> 0 --> :)
 	println("fYD(ys[argmax(fY.(ys))])  = ", fYD(ys[argmax(fY.(ys))])) 
@@ -852,11 +850,11 @@ Bishop2023_DLFig2Dot123()
 md"
 ---
 ###### 3.13 The Symbolic Derivative of $\frac{d}{dy}f_Y(y) =f'_Y(y)$
-In 3.1 (DLFC, (2.72)) we argued that simple transformations according to $\hat Y = g(\hat X), \hat X = g^{-1}(\hat Y)$ could only be made if $f_X(x), f_Y(y)$ were *differentiable, unconstrained* functions. This is *not* true for *densities*. These are constrained to *nonnegative* values and $\int f(x) dx = 1$.
+In 3.1 (DLFC, (2.72)) we argued that *simple* transformations according to $\hat Y = g(\hat X), \hat X = g^{-1}(\hat Y)$ could only be made if $f_X(x), f_Y(y)$ were *differentiable, unconstrained* functions. This is *not* true for *densities*. These are constrained to *nonnegative* values and $\int f(x) dx = 1$.
 
 Instead we have derived $mode(Y) = \hat Y$ either by computation of $argmax(f_Y(y))$ or by solving for the root of the zero-set derivative $f'_Y(y)=0$. In both cases we used numeric algorithms and got the value $mode(Y)=0.91$.
 
-Bishop & Bishop (2024, p. 43) prefer to present the correction factor (Jacobian) in the transformation $(DLFC, (2.71))$ symbolically. We try to elaborate their ideas as far as possible in *Julia* graphics.
+Bishop & Bishop (2024, p. 43) prefer to present the *correction factor* (= *Jacobian*) in the transformation $(DLFC, (2.71))$ symbolically. We try to elaborate their ideas as far as possible in *Julia* graphics.
 
 We start with the transform of the density $f_X(x)$ in 3.1:
 
@@ -896,7 +894,7 @@ md"
 ---
 ###### 3.14 Translation of the Symbolic Derivative of $\frac{d}{dy}f_Y(y) =f'_Y(y)$ into Julia
 
-For bookkeeping purposes we denote the various factors of $f'_Y(y)$ with letters $a...d$. The derivatives were crosschecked with [*Wolfram Alpha*](https://www.wolframalpha.com/).
+For bookkeeping purposes we denote the various factors of $f'_Y(y)$ with letters $a...d$. The correctness of the *symbolic* derivatives were crosschecked with [*Wolfram Alpha*](https://www.wolframalpha.com/).
 
 $f'_Y(y) = f_X'((g^{-1})(y)) \cdot (g^{-1})'(y)^2 + f_X((g^{-1})(y))\cdot (g^{-1})''(y)=$
 $= a\cdot b^2 + c \cdot d.$
@@ -904,11 +902,11 @@ $= a\cdot b^2 + c \cdot d.$
 where:
 
 $a=f'_X((g^{-1})(y)) := fXD\_gInv(y),$
-$b_1=(g^{-1})'(y)    := gInv\_SymbD(y) = \frac{1}{y - y^2},$
-$b_2=(g^{-1})'(y)    := gInv\_NumD(y),$
+$b_1=(g^{-1})'(y)    := gInvD\_Symb(y) = \frac{1}{y - y^2},$
+$b_2=(g^{-1})'(y)    := gInvD\_Num(y),$
 $c=f_X((g^{-1})(y))  := fX\_gInv(y)$
-$d_1=(g^{-1})''(y)   := gInv\_SymbDD(y) = \frac{2y-1}{(y-1)^2y^2}$
-$d_2=(g^{-1})''(y)   := gInv\_NumDD(y).$
+$d_1=(g^{-1})''(y)   := gInvDD\_Symb(y) = \frac{2y-1}{(y-1)^2y^2}$
+$d_2=(g^{-1})''(y)   := gInvDD\_Num(y).$
 
 "
 
@@ -918,18 +916,18 @@ begin
 	# derivative f'_X(y) = f'_X(g^{-1}(y))
 	fXD_gInv(y)    = ForwardDiff.derivative(fX_gInv, y)   # a) numeric derivative
 	#--------------------------------------------------------------------------------
-	gInv_SymbD(y)  = 1.0/(y - y^2)                     # b1 = symbolic (g^{-1})'(y)
-	gInv_NumD(y)   = ForwardDiff.derivative(gInv, y)   # b2 = numeric (g^{-1})'(y)
+	gInvD_Symb(y)  = 1.0/(y - y^2)                     # b1 = symbolic (g^{-1})'(y)
+	gInvD_Num(y)   = ForwardDiff.derivative(gInv, y)   # b2 = numeric (g^{-1})'(y)
 	#--------------------------------------------------------------------------------
-	gInv_SymbDD(y) = (2.0*y - 1)/((y - 1.0)^2*y^2)       # d1 = symbol.(g^{-1})''(y)
-	gInv_NumDD(y)  = ForwardDiff.derivative(gInv_NumD, y)# d2 = numer. (g^{-1})''(y)
+	gInvDD_Symb(y) = (2.0*y - 1)/((y - 1.0)^2*y^2)       # d1 = symbol.(g^{-1})''(y)
+	gInvDD_Num(y)  = ForwardDiff.derivative(gInvD_Num, y)# d2 = numer. (g^{-1})''(y)
 	#--------------------------------------------------------------------------------
 end # begin
 
 # ╔═╡ d9b644a4-c59e-40e7-beb3-d7aedf5c2a1e
 function derivatives()
 	xs               = -80.0:Δx:4.0
-	x2s              = -4.5:Δx:1.5
+	x2s              = -2.5:Δx:4.5
 	ys               = 0.02:Δy:0.98
 	#------------------------------------
 	titlefontsize    = 12
@@ -950,6 +948,7 @@ function derivatives()
 	s(y)            = gInv_SymbD(y)/abs(gInv_SymbD(y))
 	#-----------------------------------------------------------------------------
 	pl1 = plot(title=L"pl1:\ density\ f_Y(y)", titlefontsize=titlefontsize,  permute=(:x, :y), linewidth=linewidth+1, legendfontsize=legendfontsize,
+	ylimits=(-1.0, 4.0),
 	ys, fY(ys), color=:red, label=L"density\ f_Y(y)")
 	#
 	plot!(x2s, x -> ys[argmax(fY.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"x \rightarrow ys\left[argmax(fY(ys)\right]")
@@ -967,27 +966,27 @@ function derivatives()
 	annotate!(-40, 0.93, text(L"ys[argmax(fY.(ys)] = 0.91", annotateFontSize))
 	#-----------------------------------------------------------------------------
 	pl3 = 
-		plot(ys, gInv.(ys), title=L"pl3_1: g^{-1}(y) = logit\ transformation\ of\ Y", titlefontsize=titlefontsize, legendfontsize=legendfontsize, color=:orange, permute=(:x, :y), linewidth=linewidth+2, label=L"pl3_1: g^{-1}(y) = logit\ transformation\ of\ Y")
+		plot(ys, gInv.(ys), title=L"pl3: g^{-1}(y) = logit\ transformation\ of\ Y", titlefontsize=titlefontsize, legendfontsize=legendfontsize, color=:orange, permute=(:x, :y), linewidth=linewidth+2, label=L"pl3_1: g^{-1}(y) = logit\ transformation\ of\ Y")
 		#--------------------------------------------------------------------------
-		plot!(ys, abs.(gInv.(ys)), title=L"pl3_2:\ |(g^{-1})(y)| = |logit\ transformation\ of\ Y|", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl3_2:\ |(g^{-1})(y)| = |logit\ transformation\ of\ Y|")
+		plot!(ys, abs.(gInv.(ys)), title=L"pl3:\ |(g^{-1})(y)| = |logit\ transformation\ of\ Y|", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl3_2:\ |(g^{-1})(y)| = |logit\ transformation\ of\ Y|")
 	#-----------------------------------------------------------------------------
 	pl4 = plot(ys, gInv.(ys)./abs.(gInv.(ys)), title=L"pl4:\forall y \in [0,1]:\frac{(g^{-1})(y)}{|(g^{-1})(y)|}=1", titlefontsize=titlefontsize, legendfontsize=legendfontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, 
 	label=L"pl4:\forall y \in [0,1]:\frac{(g^{-1})(y)}{|(g^{-1})(y)|}=1")
 	#-----------------------------------------------------------------------------
 	pl5 = 
-		plot(ys, gInv_SymbD.(ys), color=:orange, permute=(:x, :y), linewidth=linewidth+2, legendfontsize=legendfontsize, label=L"pl5_1:\ symbol.deriv.\ b_1=(g^{-1})'(y)")
+		plot(ys, gInvD_Symb.(ys), color=:orange, permute=(:x, :y), linewidth=linewidth+2, legendfontsize=legendfontsize, label=L"pl5_1:\ symbol.deriv.\ b_1=(g^{-1})'(y)")
 		#-------------------------------------------------------------------------
-		plot!(ys, gInv_NumD.(ys), title=L"pl5_{1,2}:\ derivative\ b_{1,2}=(g^{-1})'(y)", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl5_2:\ numer.deriv.\ b_2=(g^{-1})'(y)")
+		plot!(ys, gInvD_Num.(ys), title=L"pl5:\ derivative\ b =(g^{-1})'(y)", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl5_2:\ numer.deriv.\ b_2=(g^{-1})'(y)")
 	#-----------------------------------------------------------------------------
 	pl6 = 
-		plot(ys, (gInv_SymbD.(ys)).^2, color=:orange, permute=(:x, :y), linewidth=linewidth+2, legendfontsize=legendfontsize, label=L"pl6_1:b)\ symbol.deriv.\ b_1^2=(g^{-1})'(y)^2")
+		plot(ys, (gInvD_Symb.(ys)).^2, color=:orange, permute=(:x, :y), linewidth=linewidth+2, legendfontsize=legendfontsize, label=L"pl6_1:b)\ symbol.deriv.\ b_1^2=(g^{-1})'(y)^2")
 		#-------------------------------------------------------------------------
-		plot!(ys, (gInv_NumD.(ys)).^2, title=L"b)\ pl6_{1,2}:\ derivative\ b_{1,2}^2=(g^{-1})'(y)^2", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl6_2:b)\ numer.deriv.\ b_2^2=(g^{-1})'(y)^2")
+		plot!(ys, (gInvD_Num.(ys)).^2, title=L"b)\ pl6:\ derivative\ b^2=(g^{-1})'(y)^2", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl6_2:b)\ numer.deriv.\ b_2^2=(g^{-1})'(y)^2")
 	#-----------------------------------------------------------------------------
 	pl7 = 
-		plot(ys, gInv_SymbDD.(ys), color=:orange, permute=(:x, :y), linewidth=linewidth+2, legendfontsize=legendfontsize, label=L"pl7_1:\ symbol.deriv.\ d_1=(g^{-1})''(y)")
+		plot(ys, gInvDD_Symb.(ys), color=:orange, permute=(:x, :y), linewidth=linewidth+2, legendfontsize=legendfontsize, label=L"pl7_1:\ symbol.deriv.\ d_1=(g^{-1})''(y)")
 		#-------------------------------------------------------------------------
-		plot!(ys, gInv_NumDD.(ys), title=L"pl7_{1,2}:\ derivative\ d_2=(g^{-1})''(y)", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl7_2:\ numer.deriv.\ d_1=(g^{-1})''(y)")
+		plot!(ys, gInvDD_Num.(ys), title=L"pl7:\ derivative\ d_2=(g^{-1})''(y)", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl7_2:\ numer.deriv.\ d_1=(g^{-1})''(y)")
 	#-----------------------------------------------------------------------------
 	pl8 = 
 		plot(ys, fX_gInv(ys), permute=(:x, :y), color=:blueviolet, linewidth=linewidth+1, legendfontsize=legendfontsize, label = L"pl8:\ c)\ density:f_X(g^{-1}(y))")
@@ -996,7 +995,7 @@ function derivatives()
 		#
 		plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linewidth=linewidth-1, linestyle=:dash, label=L"a = f'_X(g^{-1}(y)) = 0")
 	    #
-		plot!(x2s, x -> ys[argmax(fX_gInv.(ys))], linewidth=linewidth-1, color=:blueviolet, linestyle=:dash, label=L"x \rightarrow ys\left[argmax(fY\_gInv)\right]")
+		plot!(x2s, x -> ys[argmax(fX_gInv.(ys))], linewidth=linewidth-1, color=:blueviolet, linestyle=:dash, label=L"x \rightarrow ys\left[argmax(fX\_gInv)\right]")
 	#-----------------------------------------------------------------------------
 	plot(pl1, pl2, pl3, pl4, pl5, pl6, pl7, pl8, layout=(4, 2), size=(800, 2000))
 end # function derivatives()
@@ -1004,7 +1003,7 @@ end # function derivatives()
 # ╔═╡ e60fb090-ea7b-4f27-8bb3-e4d9704f09d3
 md"
 ---
-###### 3.15 Results: Transformed *Density* $f_Y((g^{-1}))(y)$ (*pl1*) and its *Derivative* $f'_Y((g^{-1}))(y)$ (*pl2*)
+###### 3.15 Intermediate Plotting Results: Transformed *Density* $f_Y((g^{-1}))(y)$ (*pl1*), its *Derivative* $f'_Y((g^{-1}))(y)$ (*pl2*), and others (*pl3-pl8*)
 "
 
 # ╔═╡ a2aa8846-e540-4403-9da9-ad12b0622859
@@ -1053,7 +1052,7 @@ md"
 "
 
 # ╔═╡ ab3ab979-0027-4a6c-a85a-d3ea8834aa19
-gInv_NumDD
+gInvDD_Num
 
 # ╔═╡ a053117f-f2ff-49c0-9c7e-6f465a8e5bfb
 function fY_D_2nd()
@@ -1071,16 +1070,16 @@ function fY_D_2nd()
 	argMaxTermA    = find_zero(ys -> termA.(ys), 0.8)
 	#--------------------------------------------------------------------------------
 	# termB = derivative (g^{-1})'(y)^2
-	termB(ys)      = gInv_NumD.(ys).^2
+	termB(ys)      = gInvD_Num.(ys).^2
 	#--------------------------------------------------------------------------------
-	termAB(ys)     = fXD_gInv.(ys) .* gInv_NumD.(ys).^2
+	termAB(ys)     = fXD_gInv.(ys) .* gInvD_Num.(ys).^2
 	argMaxTermAB   = find_zero(ys -> termAB.(ys), 0.8)
 	#-------------------------------------------------------------------------------
 	# termC(y) = density f_X(g^{-1}(y)) := fX_gInv(y)
 	termC(ys)      = fX_gInv.(ys)
 	#-------------------------------------------------------------------------------
 	# derivative d2 = numeric (g^{-1})''(y)
-	termD(ys)      = gInv_NumDD.(ys)
+	termD(ys)      = gInvDD_Num.(ys)
 	#-------------------------------------------------------------------------------
 	termCD(ys)     = termC(ys) .* termD(ys)
 	termABCD(ys)   = termAB(ys) .+ termCD(ys)
@@ -1123,7 +1122,7 @@ function fY_D_2nd()
 		#
 		plot!([argMaxTermABCD, argMaxTermABCD], [-40.0, 30.0], permute=(:x, :y), color=:red, linestyle=:dash, linewidth=linewidth-1, label=L"argMaxTermABCD")
 	#-------------------------------------------------------------------------------
-	plot(plA, plB, plC, plD, plAB, plCD, plABCD, layout=(4,2), size=(1000, 1200), ylimits=(-0.1, 1.01))
+	plot(plA, plB, plC, plD, plAB, plCD, plABCD, layout=(4,2), size=(800, 2000), ylimits=(-0.1, 1.01))
 	#-------------------------------------------------------------------------------
 end # function fY_D_2nd()
 
@@ -3042,7 +3041,7 @@ version = "1.13.0+0"
 # ╔═╡ Cell order:
 # ╟─b5916e00-4477-11f1-96fe-e1cfd3b49ab5
 # ╟─6e4c6dce-c7d2-498d-a44b-323ae00d2b92
-# ╠═21820af4-1942-4b97-94bf-dc2fd23bb6f2
+# ╟─21820af4-1942-4b97-94bf-dc2fd23bb6f2
 # ╟─1c3a0433-c77f-4566-88c1-4a911f4d9847
 # ╠═2d94e672-de56-46a7-845c-66903eb5a83c
 # ╟─27919bfe-7c22-4462-8081-63953c500610
@@ -3071,7 +3070,7 @@ version = "1.13.0+0"
 # ╠═a679883f-c97c-41f4-8333-41b0b998099b
 # ╟─54f2f90b-ed2a-498c-9f23-a446ee403981
 # ╟─be819c32-d007-4547-91b0-8b1a29f6752f
-# ╠═ab462070-74e3-4f16-b1e3-d119418ee376
+# ╟─ab462070-74e3-4f16-b1e3-d119418ee376
 # ╟─c1bd9c0c-5422-421c-892c-a581d778ad82
 # ╟─45d605af-274b-48ac-82a3-0124714d760d
 # ╟─af6065e1-b290-4cfb-948c-efb25b8c3fbe
