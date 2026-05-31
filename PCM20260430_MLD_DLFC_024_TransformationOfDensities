@@ -36,7 +36,7 @@ md"
 ====================================================================================
 #### MLD_DLFC, ch.02.4 Transformation Of Densities
 ##### file: PCM20260430\_MLD\_DLFC\_02.4\_TransformationOfDensities
-##### Julia/Pluto.jl: 1.12.6/0.20.4 by PCM *** 2026/05/29 ***
+##### Julia/Pluto.jl: 1.12.6/0.20.4 by PCM *** 2026/05/31 ***
 ====================================================================================
 "
 
@@ -59,7 +59,9 @@ md"
 ##### 1. Topics
 - [*change of variable*](https://en.wikipedia.org/wiki/Change_of_variables)
 - [*probability density*]((https://en.wikipedia.org/wiki/Probability_density_function))
+- [*transformation of densities*](https://en.wikipedia.org/wiki/Probability_density_function)
 - [*Jacobian determinant*](https://en.wikipedia.org/wiki/Jacobian_matrix_and_determinant)
+- [*logistic*](https://en.wikipedia.org/wiki/Logistic_function), [*logit*](https://en.wikipedia.org/wiki/Logit) function
 "
 
 # ╔═╡ 1c3a0433-c77f-4566-88c1-4a911f4d9847
@@ -745,6 +747,15 @@ end # let
 # ╔═╡ 5849098a-3150-4bbc-bdf0-d32770cfd3c6
 gInv(0.91)                             # gInv(mode(Y)) > mode(X)
 
+# ╔═╡ 81c9024f-1f92-4275-96df-d81fd6dea240
+md"
+---
+###### 3.12 Projection of *PDF* $f_Y(y)$ and $Mode(Y)= \hat Y$ into *PMF* (=Histogram) Space
+In 3.10 we documented two numerical methods to obtain the correct $Mode(Y)= \hat Y$. For the first we only need the *PDF* $f_Y(y)$ and for the second its derivative $f'_Y(y)$ and a root finding method to solve $f'_Y(y)=0$.
+
+Now we are able to project $Mode(Y)= \hat Y$ into *PMF* (=Histogram) Space (see below).
+"
+
 # ╔═╡ 405b87a5-0ab0-42ed-aef7-15b35f822d94
 function Bishop2023_DLFig2Dot123()
 	modeY    = g(modeX)
@@ -769,7 +780,7 @@ function Bishop2023_DLFig2Dot123()
 		-sum(logpdf.(dist, randomYs))
 	end # function negLogLikelihood(params)
 	#----------------------------------------------------------------------------
-	plot(title=L"Y = g(X),\ PMFs\ p_X,\ p_Y, PDFs\ f_X(x), f_Y(y), and\ Guesses f_{2Y}(y), f_{3Y}(y), f_{4Y}(y)", titlefontsize = titlefontsize, legendfontsize=legendfontsize, size=size, xlimits=xlimits, ylimits=ylimits)
+	plot(title=L"Y = g(X), density\ f_Y(y), and\ mode(Y) = \hat Y", titlefontsize = titlefontsize, legendfontsize=legendfontsize, size=size, xlimits=xlimits, ylimits=ylimits)
 	plot!(xs, g, label=L"logistic-sigmoid\ g(X)", linewidth=linewidth, color=:blueviolet, xlabel=L"X", ylabel=L"Y\ \ (=P)")
 	annotate!(8.5, 0.82, text(L"g(X)=Logistic\ Sigmoid", annotateFontSize))
 	annotate!(2.2, 0.10, text(L"g(X)", annotateFontSize))
@@ -840,12 +851,12 @@ Bishop2023_DLFig2Dot123()
 # ╔═╡ 4c522ae1-16a7-463c-8366-427fb299af69
 md"
 ---
-###### 3.11 The Symbolic Derivative of $\frac{d}{dy}f_Y(y) =f'_Y(y)$
-In 3.1 (DLFC, (2.72)) we could demonstrate that $f'_Y(\hat y) = f'_X(\hat x) = 0$ and $\hat Y = g(\hat X), \hat X = g^{-1}(\hat Y)$ only if $f_X(x), f_Y(y)$ were *differentiable, unconstrained* functions. This is *not* true for densities.
+###### 3.13 The Symbolic Derivative of $\frac{d}{dy}f_Y(y) =f'_Y(y)$
+In 3.1 (DLFC, (2.72)) we argued that simple transformations according to $\hat Y = g(\hat X), \hat X = g^{-1}(\hat Y)$ could only be made if $f_X(x), f_Y(y)$ were *differentiable, unconstrained* functions. This is *not* true for *densities*. These are constrained to *nonnegative* values and $\int f(x) dx = 1$.
 
 Instead we have derived $mode(Y) = \hat Y$ either by computation of $argmax(f_Y(y))$ or by solving for the root of the zero-set derivative $f'_Y(y)=0$. In both cases we used numeric algorithms and got the value $mode(Y)=0.91$.
 
-Bishop & Bishop (2024, p. 43) prefer to present the correction factor symbolically. We try to elaborate their ideas as far as possible in *Julia* graphics.
+Bishop & Bishop (2024, p. 43) prefer to present the correction factor (Jacobian) in the transformation $(DLFC, (2.71))$ symbolically. We try to elaborate their ideas as far as possible in *Julia* graphics.
 
 We start with the transform of the density $f_X(x)$ in 3.1:
 
@@ -883,7 +894,7 @@ this expression is apart from minor differences in spelling virtually identical 
 # ╔═╡ e991a48d-5d63-4891-99bb-51d29cfd03e6
 md"
 ---
-###### 3.12 Translation of the Symbolic Derivative of $\frac{d}{dy}f_Y(y) =f'_Y(y)$ into Julia
+###### 3.14 Translation of the Symbolic Derivative of $\frac{d}{dy}f_Y(y) =f'_Y(y)$ into Julia
 
 For bookkeeping purposes we denote the various factors of $f'_Y(y)$ with letters $a...d$. The derivatives were crosschecked with [*Wolfram Alpha*](https://www.wolframalpha.com/).
 
@@ -892,7 +903,7 @@ $= a\cdot b^2 + c \cdot d.$
 
 where:
 
-$a=f'_X((g^{-1})(y)) := fX\_gInvD(y),$
+$a=f'_X((g^{-1})(y)) := fXD\_gInv(y),$
 $b_1=(g^{-1})'(y)    := gInv\_SymbD(y) = \frac{1}{y - y^2},$
 $b_2=(g^{-1})'(y)    := gInv\_NumD(y),$
 $c=f_X((g^{-1})(y))  := fX\_gInv(y)$
@@ -905,7 +916,7 @@ $d_2=(g^{-1})''(y)   := gInv\_NumDD(y).$
 begin 
 	#--------------------------------------------------------------------------------
 	# derivative f'_X(y) = f'_X(g^{-1}(y))
-	fX_gInvD(y)    = ForwardDiff.derivative(fX_gInv, y)   # a) numeric derivative
+	fXD_gInv(y)    = ForwardDiff.derivative(fX_gInv, y)   # a) numeric derivative
 	#--------------------------------------------------------------------------------
 	gInv_SymbD(y)  = 1.0/(y - y^2)                     # b1 = symbolic (g^{-1})'(y)
 	gInv_NumD(y)   = ForwardDiff.derivative(gInv, y)   # b2 = numeric (g^{-1})'(y)
@@ -981,7 +992,7 @@ function derivatives()
 	pl8 = 
 		plot(ys, fX_gInv(ys), permute=(:x, :y), color=:blueviolet, linewidth=linewidth+1, legendfontsize=legendfontsize, label = L"pl8:\ c)\ density:f_X(g^{-1}(y))")
 		#------------------------------------------------------------------------
-		plot!(ys, fX_gInvD.(ys), title=L"pl8:c)\ density:f_X(g^{-1}(y)),\ a)\ deriv.\ f'_X(g^{-1}(y))", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth-1, label=L"pl8:a)\ derivative\ f'_X(g^{-1}(y))")
+		plot!(ys, fXD_gInv.(ys), title=L"pl8:c)\ density:f_X(g^{-1}(y)),\ a)\ deriv.\ f'_X(g^{-1}(y))", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth-1, label=L"pl8:a)\ derivative\ f'_X(g^{-1}(y))")
 		#
 		plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linewidth=linewidth-1, linestyle=:dash, label=L"a = f'_X(g^{-1}(y)) = 0")
 	    #
@@ -993,7 +1004,7 @@ end # function derivatives()
 # ╔═╡ e60fb090-ea7b-4f27-8bb3-e4d9704f09d3
 md"
 ---
-###### 3.13 Results: Transformed *Density* $f_Y((g^{-1}))(y)$ (*pl1*) and its *Derivative* $f'_Y((g^{-1}))(y)$ (*pl2*)
+###### 3.15 Results: Transformed *Density* $f_Y((g^{-1}))(y)$ (*pl1*) and its *Derivative* $f'_Y((g^{-1}))(y)$ (*pl2*)
 "
 
 # ╔═╡ a2aa8846-e540-4403-9da9-ad12b0622859
@@ -1020,7 +1031,7 @@ function resultDensities()
 	#
 	plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linestyle=:dash, linewidth=linewidth-1, label=L"f'_Y(y)=0")
 	#------------------------------------------------------------------------
-	plot!(ys, fX_gInvD.(ys), color=:blueviolet, permute=(:x, :y), linewidth=linewidth-1, label=L"a)\ derivative\ f'_X(g^{-1}(y))")
+	plot!(ys, fXD_gInv.(ys), color=:blueviolet, permute=(:x, :y), linewidth=linewidth-1, label=L"a)\ derivative\ f'_X(g^{-1}(y))")
 	#--------------------------------------------------------------------------------
 	println("mode(Y) = ", ys[argmax(fY.(ys))])
 	#--------------------------------------------------------------------------------
@@ -1038,7 +1049,7 @@ resultDensities()
 # ╔═╡ 2201195a-bc2d-4286-a580-81154bf64e87
 md"
 ---
-###### 3.14 *Terms of Derivative* of $\frac{d}{dy}f_Y(y) =f'_Y(y)$ in Julia
+###### 3.16 *Terms of Derivative* of $\frac{d}{dy}f_Y(y) =f'_Y(y)$ in Julia
 "
 
 # ╔═╡ ab3ab979-0027-4a6c-a85a-d3ea8834aa19
@@ -1056,13 +1067,13 @@ function fY_D_2nd()
 	xlimits        = (-0.001, 1.14)
 	size           = (800, 800)
 	#--------------------------------------------------------------------------------
-    termA(ys)      = fX_gInvD.(ys)
+    termA(ys)      = fXD_gInv.(ys)
 	argMaxTermA    = find_zero(ys -> termA.(ys), 0.8)
 	#--------------------------------------------------------------------------------
 	# termB = derivative (g^{-1})'(y)^2
 	termB(ys)      = gInv_NumD.(ys).^2
 	#--------------------------------------------------------------------------------
-	termAB(ys)     = fX_gInvD.(ys) .* gInv_NumD.(ys).^2
+	termAB(ys)     = fXD_gInv.(ys) .* gInv_NumD.(ys).^2
 	argMaxTermAB   = find_zero(ys -> termAB.(ys), 0.8)
 	#-------------------------------------------------------------------------------
 	# termC(y) = density f_X(g^{-1}(y)) := fX_gInv(y)
@@ -1135,6 +1146,8 @@ md"
 - **Murphy, K.P.**; [*Probabilistic Machine Learning: Advanced Topics*](https://github.com/probml/pml2-book/releases/latest/download/book2.pdf), Massachuchetts, USA: MIT Press, 2023; last visit 2026/05/07
 - **Wikipedia**; [*Change of Variables*](https://en.wikipedia.org/wiki/Change_of_variables); last visit 2026/05/26
 - **Wikipedia**; [*Probability Density Function*](https://en.wikipedia.org/wiki/Probability_density_function); last visit 2026/05/10
+- **Wikipedia**; [*Logistic* function](https://en.wikipedia.org/wiki/Logistic_function); last visit 2026/05/31
+- **Wikipedia**; [*Logit* function](https://en.wikipedia.org/wiki/Logit); last visit 2026/05/31
 - **Wolfram**; [*Wolfram Alpha*](https://www.wolframalpha.com/); last visit 2026/05/27
 "
 
@@ -3029,7 +3042,7 @@ version = "1.13.0+0"
 # ╔═╡ Cell order:
 # ╟─b5916e00-4477-11f1-96fe-e1cfd3b49ab5
 # ╟─6e4c6dce-c7d2-498d-a44b-323ae00d2b92
-# ╟─21820af4-1942-4b97-94bf-dc2fd23bb6f2
+# ╠═21820af4-1942-4b97-94bf-dc2fd23bb6f2
 # ╟─1c3a0433-c77f-4566-88c1-4a911f4d9847
 # ╠═2d94e672-de56-46a7-845c-66903eb5a83c
 # ╟─27919bfe-7c22-4462-8081-63953c500610
@@ -3058,7 +3071,7 @@ version = "1.13.0+0"
 # ╠═a679883f-c97c-41f4-8333-41b0b998099b
 # ╟─54f2f90b-ed2a-498c-9f23-a446ee403981
 # ╟─be819c32-d007-4547-91b0-8b1a29f6752f
-# ╟─ab462070-74e3-4f16-b1e3-d119418ee376
+# ╠═ab462070-74e3-4f16-b1e3-d119418ee376
 # ╟─c1bd9c0c-5422-421c-892c-a581d778ad82
 # ╟─45d605af-274b-48ac-82a3-0124714d760d
 # ╟─af6065e1-b290-4cfb-948c-efb25b8c3fbe
@@ -3067,8 +3080,9 @@ version = "1.13.0+0"
 # ╟─41d04cb0-bef5-4a97-9538-b04f42fe3ee1
 # ╟─caf643bd-4b8f-4281-9c70-5907451c1790
 # ╠═5849098a-3150-4bbc-bdf0-d32770cfd3c6
+# ╟─81c9024f-1f92-4275-96df-d81fd6dea240
 # ╟─405b87a5-0ab0-42ed-aef7-15b35f822d94
-# ╠═e779b696-5f18-46b0-89ac-50629dd149bd
+# ╟─e779b696-5f18-46b0-89ac-50629dd149bd
 # ╟─4c522ae1-16a7-463c-8366-427fb299af69
 # ╟─e991a48d-5d63-4891-99bb-51d29cfd03e6
 # ╠═41b1196e-9f0a-4398-b5af-f442c0be2715
