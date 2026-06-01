@@ -36,7 +36,7 @@ md"
 ====================================================================================
 #### MLD_DLFC, ch.02.4 Transformation Of Densities
 ##### file: PCM20260430\_MLD\_DLFC\_02.4\_TransformationOfDensities
-##### Julia/Pluto.jl: 1.12.6/0.20.4 by PCM *** 2026/05/31 ***
+##### Julia/Pluto.jl: 1.12.6/0.20.4 by PCM *** 2026/06/01 ***
 ====================================================================================
 "
 
@@ -955,7 +955,7 @@ function derivatives()
 	#
 	annotate!(1.9, 0.93, text(L"ys[argmax(fY.(ys))]       = 0.91", annotateFontSize))
 	#-----------------------------------------------------------------------------
-	pl2 = plot(title=L"pl2:\ deriv.\ of\ density\ f_Y'(y)", 
+	pl2 = plot(title=L"pl2:\ deriv.\ of\ density\ f'_Y(y)", 
 			   ys, fYD.(ys), permute=(:x, :y), color=:magenta,
 			   titlefontsize=titlefontsize, legendfontsize=legendfontsize, linewidth=linewidth, label=L"derivative\ f_Y'(y)")
 	#
@@ -968,10 +968,10 @@ function derivatives()
 	pl3 = 
 		plot(ys, gInv.(ys), title=L"pl3: g^{-1}(y) = logit\ transformation\ of\ Y", titlefontsize=titlefontsize, legendfontsize=legendfontsize, color=:orange, permute=(:x, :y), linewidth=linewidth+2, label=L"pl3_1: g^{-1}(y) = logit\ transformation\ of\ Y")
 		#--------------------------------------------------------------------------
-		plot!(ys, abs.(gInv.(ys)), title=L"pl3:\ |(g^{-1})(y)| = |logit\ transformation\ of\ Y|", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl3_2:\ |(g^{-1})(y)| = |logit\ transformation\ of\ Y|")
+		plot!(ys, abs.(gInv.(ys)), title=L"pl3:\ |g^{-1}(y)| = |logit\ transformation\ of\ Y|", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl3_2:\ |g^{-1}(y)| = |logit\ transformation\ of\ Y|")
 	#-----------------------------------------------------------------------------
-	pl4 = plot(ys, gInv.(ys)./abs.(gInv.(ys)), title=L"pl4:\forall y \in [0,1]:\frac{(g^{-1})(y)}{|(g^{-1})(y)|}=1", titlefontsize=titlefontsize, legendfontsize=legendfontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, 
-	label=L"pl4:\forall y \in [0,1]:\frac{(g^{-1})(y)}{|(g^{-1})(y)|}=1")
+	pl4 = plot(ys, gInv.(ys)./abs.(gInv.(ys)), title=L"pl4:\forall y \in [0,1]:\frac{g^{-1}(y)}{|g^{-1}(y)|}=1", titlefontsize=titlefontsize, legendfontsize=legendfontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, 
+	label=L"pl4:\forall y \in [0,1]:\frac{g^{-1}(y)}{|g^{-1}(y)|}=1")
 	#-----------------------------------------------------------------------------
 	pl5 = 
 		plot(ys, gInvD_Symb.(ys), color=:orange, permute=(:x, :y), linewidth=linewidth+2, legendfontsize=legendfontsize, label=L"pl5_1:\ symbol.deriv.\ b_1=(g^{-1})'(y)")
@@ -979,19 +979,19 @@ function derivatives()
 		plot!(ys, gInvD_Num.(ys), title=L"pl5:\ derivative\ b =(g^{-1})'(y)", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl5_2:\ numer.deriv.\ b_2=(g^{-1})'(y)")
 	#-----------------------------------------------------------------------------
 	pl6 = 
-		plot(ys, (gInvD_Symb.(ys)).^2, color=:orange, permute=(:x, :y), linewidth=linewidth+2, legendfontsize=legendfontsize, label=L"pl6_1:b)\ symbol.deriv.\ b_1^2=(g^{-1})'(y)^2")
+		plot(ys, (gInvD_Symb.(ys)).^2, color=:orange, permute=(:x, :y), linewidth=linewidth+2, legendfontsize=legendfontsize, label=L"pl6_1:\ symbol.deriv.\ b_1^2=(g^{-1})'(y)^2")
 		#-------------------------------------------------------------------------
-		plot!(ys, (gInvD_Num.(ys)).^2, title=L"b)\ pl6:\ derivative\ b^2=(g^{-1})'(y)^2", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl6_2:b)\ numer.deriv.\ b_2^2=(g^{-1})'(y)^2")
+		plot!(ys, (gInvD_Num.(ys)).^2, title=L"pl6:\ derivative\ b^2=(g^{-1})'(y)^2", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl6_2:\ numer.deriv.\ b_2^2=(g^{-1})'(y)^2")
 	#-----------------------------------------------------------------------------
 	pl7 = 
 		plot(ys, gInvDD_Symb.(ys), color=:orange, permute=(:x, :y), linewidth=linewidth+2, legendfontsize=legendfontsize, label=L"pl7_1:\ symbol.deriv.\ d_1=(g^{-1})''(y)")
 		#-------------------------------------------------------------------------
-		plot!(ys, gInvDD_Num.(ys), title=L"pl7:\ derivative\ d_2=(g^{-1})''(y)", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl7_2:\ numer.deriv.\ d_1=(g^{-1})''(y)")
+		plot!(ys, gInvDD_Num.(ys), title=L"pl7:\ derivative\ d=(g^{-1})''(y)", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl7_2:\ numer.deriv.\ d_2=(g^{-1})''(y)")
 	#-----------------------------------------------------------------------------
 	pl8 = 
-		plot(ys, fX_gInv(ys), permute=(:x, :y), color=:blueviolet, linewidth=linewidth+1, legendfontsize=legendfontsize, label = L"pl8:\ c)\ density:f_X(g^{-1}(y))")
+		plot(ys, fX_gInv(ys), permute=(:x, :y), color=:blueviolet, linewidth=linewidth+1, legendfontsize=legendfontsize, label = L"pl8:\ density:\ c = f_X(g^{-1}(y))")
 		#------------------------------------------------------------------------
-		plot!(ys, fXD_gInv.(ys), title=L"pl8:c)\ density:f_X(g^{-1}(y)),\ a)\ deriv.\ f'_X(g^{-1}(y))", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth-1, label=L"pl8:a)\ derivative\ f'_X(g^{-1}(y))")
+		plot!(ys, fXD_gInv.(ys), title=L"pl8:dens.c=f_X(g^{-1}(y)),deriv.a=f'_X(g^{-1}(y))", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth-1, label=L"pl8:\ derivative\ a = f'_X(g^{-1}(y))")
 		#
 		plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linewidth=linewidth-1, linestyle=:dash, label=L"a = f'_X(g^{-1}(y)) = 0")
 	    #
@@ -1003,7 +1003,25 @@ end # function derivatives()
 # ╔═╡ e60fb090-ea7b-4f27-8bb3-e4d9704f09d3
 md"
 ---
-###### 3.15 Intermediate Plotting Results: Transformed *Density* $f_Y((g^{-1}))(y)$ (*pl1*), its *Derivative* $f'_Y((g^{-1}))(y)$ (*pl2*), and others (*pl3-pl8*)
+###### 3.15 Intermediate Plotting Results: Transformed *Density* $f_Y(g^{-1}(y))$ (*pl1*), its *Derivative* $f'_Y(g^{-1}(y))$ (*pl2*), and others (*pl3-pl8*)
+Here we plot $f'_Y(g^{-1}(y))$ and some of its components:
+
+- *pl1*: density $f_Y(y)$
+- *pl2*: derivative of density $f'_Y(y)$
+- *pl3*: logit transform $g^{-1}(y)$ or $|g^{-1}(y)|$
+- *pl4*: $\frac{g^{-1}(y)}{|g^{-1}(y)|}=1$
+- *pl5*: derivative $b = (g^{-1})'(y)$
+- *pl6*: square of derivative $b^2 = (g^{-1})'(y)^2$
+- *pl7*: second order derivative $d = (g^{-1})''(y)$
+- *pl8*: density $c=f_X(g^{-1}(y))$, derivative $a=f'_X(g^{-1}(y))$
+
+The necessary components for $f'_Y(g^{-1}(y))$ are
+
+- term $a$ in *pl8*
+- term $b^2$ in *pl6*
+- term $c$ in *pl8*
+- term $d$ in *pl7*.
+
 "
 
 # ╔═╡ a2aa8846-e540-4403-9da9-ad12b0622859
