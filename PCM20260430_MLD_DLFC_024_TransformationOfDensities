@@ -36,7 +36,7 @@ md"
 ====================================================================================
 #### MLD_DLFC, ch.02.4 Transformation Of Densities
 ##### file: PCM20260430\_MLD\_DLFC\_02.4\_TransformationOfDensities
-##### Julia/Pluto.jl: 1.12.6/0.20.4 by PCM *** 2026/06/06 ***
+##### Julia/Pluto.jl: 1.12.6/0.20.4 by PCM *** 2026/06/07 ***
 ====================================================================================
 "
 
@@ -51,9 +51,10 @@ Now, we are looking at *how a probability density changes under a nonlinear tran
 
 *If the [probability density function]((https://en.wikipedia.org/wiki/Probability_density_function)) of a random variable (or a vector) $X$ is given as $f_X(x)$, it is possible ... to compute the probability density function of a variable $Y = g(X)$. This is also referred to as 'variable substitution' and is used in practice to generate a random variable of arbitrary form $f_{g(X)}(y) = f_Y(y)$ using a known (e.g., uniformly distributed) random number generator.*
 
-In Bishop ([*PRML, 2006*](https://www.microsoft.com/en-us/research/wp-content/uploads/2006/01/Bishop-Pattern-Recognition-and-Machine-Learning-2006.pdf), p.58; notation slightly adapted to our spelling) we find exercise $_\text{**}1.4$: *Consider a probability density $f_X(x)$ defined over a continuous variable $X$, and suppose that we make a nonlinear change of variable using $X = g^{-1}(Y)$, so that the density transforms according to $(1.27):f_Y(y)=f_X(g^{-1}(y)\cdot|(g^{-1})'(y)|$. By differentiating $(1.27)$, show that the location $\hat Y$ of the maximum of the density in $Y$ is not in general related to the location $\hat X$ of the maximum of the density over $X$ by the simple functional relation $\hat X = g^{-1}(\hat Y)$ as a consequence of the Jacobian factor. Thi shows that the maximum of a probability density (in contrast to a simple function) is dependent on the choice of variable.*
+In Bishop ([*PRML, 2006*](https://www.microsoft.com/en-us/research/wp-content/uploads/2006/01/Bishop-Pattern-Recognition-and-Machine-Learning-2006.pdf), p.58; notation slightly adapted to our spelling) we find exercise $_\text{**}1.4$: *Consider a probability density $f_X(x)$ defined over a continuous variable $X$, and suppose that we make a nonlinear change of variable using $X = g^{-1}(Y)$, so that the density transforms according to $(1.27):f_Y(y)=f_X(g^{-1}(y)\cdot|(g^{-1})'(y)|$. By differentiating $(1.27)$, show that the location $\hat Y$ of the maximum of the density in $Y$ is not in general related to the location $\hat X$ of the maximum of the density over $X$ by the simple functional relation $\hat X = g^{-1}(\hat Y)$ as a consequence of the Jacobian factor. This shows that the maximum of a probability density (in contrast to a simple function) is dependent on the choice of variable.*
 
-Here we try to sketch a solution in *Julia*.
+Here we try to sketch a solution to exercise 1.4 in *Julia*.
+
 "
 
 # ╔═╡ 21820af4-1942-4b97-94bf-dc2fd23bb6f2
@@ -691,15 +692,11 @@ end # let
 # ╔═╡ e56da698-1ec4-4df4-9781-b6b83e1c97d6
 md"
 ---
-###### 3.11 The *Nontransformational* Computation of $mode(Y) = \hat Y$
+###### 3.11 The *Transformation-free* Computation of $mode(Y) = \hat Y$
 
-The correct *nontransformationally* determination of $mode(Y) = \hat Y$ can be  accomplished either by using $argmax(f_Y(y))$ or by solving for the *root* of the zero-set derivative $f'_Y(y)=0$. By both alternatives we get the correct value $mode(Y)= \hat Y = 0.91$.
+There are two *transformation-free* alternatives for the computation of $\hat Y$. For the first alternative we need only the *transformed* density $f_Y(y)$ and the $argmax(f_Y(y))$ function. The second alternative is based on its derivative $f'_Y(y)$ and by solving for the *root* of the zero-set derivative $f'_Y(y) = 0$. Both alternatives generate the correct value $mode(Y)= \hat Y = 0.91$.
 
-For the first alternative we need only the *transformed* density $f_Y(y)$ and for the second its derivative $f'_Y(y)$.
-
-In the second case we get $mode(Y) = \hat Y$ as the root of $f'_Y(y) = 0$. This is true for $\hat Y = 0.91$.
-
-We *cannot* regain $mode(X) = 6.5$ by *simple* transformation $g^{-1}(\hat Y) = g^{-1}(0.91) = 7.31$. This value is greater than the *true* mode's $g^{-1}(\hat Y) = 7.31 > \hat X = 6.5$.
+We *cannot* regain $mode(X) = 6.5$ by *simple* transformation $g^{-1}(\hat Y) = g^{-1}(0.91) = 7.31$. This value is greater than the *true* $mode(X)$'s value $\hat X = 6.5 < g^{-1}(\hat Y) = 7.31$.
 
 "
 
@@ -716,8 +713,8 @@ fYD(y) = ForwardDiff.derivative(fY, y)
 
 # ╔═╡ 41d04cb0-bef5-4a97-9538-b04f42fe3ee1
 md"
-Both figures below display the two *nontransformational* methods for obtaining $mode(Y) = \hat Y$. The first is computing $\hat Y = argmax(f_Y(g^{-1}(y))$ (left, below) and the second is finding the root of $f'_Y(g^{-1}(y)) = 0$ (right, below). $argmax(f_Y(g^{-1}(y))$ crosses the derivative $f'_Y(g^{-1}(y))$ when that is zero.
-Both *nontransformational* methods display that $\hat Y = 0.91$.
+Both figures below display the two *transformation-free* methods for obtaining $mode(Y) = \hat Y$. The first is computing $\hat Y = argmax(f_Y(g^{-1}(y))$ (left, below) and the second is finding the root of $f'_Y(g^{-1}(y)) = 0$ (right, below). $argmax(f_Y(g^{-1}(y))$ crosses the *zero-set* derivative $f'_Y(g^{-1}(y)) = 0$.
+Both *transformation-free* methods display $\hat Y = 0.91$.
 
 "
 
@@ -757,18 +754,18 @@ let ys       =   0.02:Δy:0.98
 end # let
 
 # ╔═╡ 5849098a-3150-4bbc-bdf0-d32770cfd3c6
-gInv(0.91)                             # gInv(mode(Y)) > mode(X) = 6.5
+gInv(0.91)                             # g^{-1}(mode(Y)) = 7.31 > mode(X) = 6.5
 
 # ╔═╡ f2befe92-8c9e-4551-bd85-471e8191e495
-gInv(0.91) > modeX                     # gInv(mode(Y)) > mode(X) = 6.5
+gInv(0.91) > modeX                     # g^{-1}(mode(Y)) = 7.31 > mode(X) = 6.5
 
 # ╔═╡ 81c9024f-1f92-4275-96df-d81fd6dea240
 md"
 ---
-###### 3.12 Projection of *PDF* $f_Y(y)$ and $Mode(Y)= \hat Y$ into *PMF* (=Histogram) Space
-In 3.10 we documented two numerical methods to obtain the correct $Mode(Y)= \hat Y$. For the *first* we only need the *PDF* $f_Y(y)$ and for the *second* its *derivative* $f'_Y(y)$ and a *root finding* method to solve $f'_Y(y)=0$.
+###### 3.12 Projection of *PDF* $f_Y(y)$ and $mode(Y)= \hat Y$ into *PMF* (=Histogram) Space
+In 3.10 we documented two numerical methods to obtain the correct $mode(Y)= \hat Y$. For the *first* we only need the *PDF* $f_Y(y)$ and for the *second* its *derivative* $f'_Y(y)$ and a *root finding* method to solve $f'_Y(y) = 0$.
 
-Now we are able to project $Mode(Y)= \hat Y$ into *PMF* (=Histogram) Space (see below).
+Now we are able to project $mode(Y)= \hat Y$ into *PMF* (= histogram) space (see below).
 "
 
 # ╔═╡ 405b87a5-0ab0-42ed-aef7-15b35f822d94
@@ -780,7 +777,7 @@ function Bishop2023_DLFig2Dot123()
 	#------------------------------------
 	titlefontsize    = 17
 	xlimits          = (0.0, 10.5)
-	ylimits          = (-0.001, 1.5)
+	ylimits          = (-0.001, 1.55)
 	guidefontsize    = 18
 	legendfontsize   = 9
 	annotateFontSize = 15
@@ -807,19 +804,20 @@ function Bishop2023_DLFig2Dot123()
 	#----------------------------------------------------------------------------
 	# histogram of N(y; μ_y≠g(modeX), σ_y≠1)
 	histogram!(randomYs, normalize=:true, permute=(:x, :y), color=:deepskyblue, label=L"N(y; μ_Y=ξ, σ_Y=ω, shape=α)")
-	annotate!(3.9, 0.85, text(L"pmf\ p_Y", annotateFontSize))
+	# annotate!(3.9, 0.85, text(L"pmf\ p_Y", annotateFontSize))
 	#----------------------------------------------------------------------------
 	# mode marker line: vertical up from modeX to logistic sigmoid
 	plot!([modeX, modeX], [0.0, ys[argmax(fY.(ys))]], ls=:dash, linewidth=linewidth-1
 		  , color=:blueviolet, label=false) 
 	# mode marker line: horizontal from logistic sigmoid to g(mode(X))
-	plot!([modeX, 0.0], [g(modeX), g(modeX)], ls =:dash, linewidth=linewidth-1, color=:orange, label=false)  
+	plot!([modeX, 0.0], [g(modeX), g(modeX)], ls =:dash, linewidth=linewidth-1, color=:orange, label=label=L"g(\hat X) = g(mode(X) = 0.82")  
+	annotate!(4.9, 0.85, text(L"g(\hat X) = g(mode(X)) = 0.82", annotateFontSize))
 	#----------------------------------------------------------------------------
 	# new marker line:
-	plot!([0.0, modeX], [ys[argmax(fY.(ys))], ys[argmax(fY.(ys))]], linewidth=linewidth-1.5, ls=:dash, color=:orangered2, label=L"x \rightarrow ys\left[argmax(fY.(ys))\right]")
-	println("mode(Y)      = ys[argmax(fY.(ys))] = ", ys[argmax(fY.(ys))])
+	plot!([0.0, modeX], [ys[argmax(fY.(ys))], ys[argmax(fY.(ys))]], linewidth=linewidth-1.5, ls=:dash, color=:orangered2, label=L"mode(Y) = \hat Y = argmax(fY.(ys)) = 0.91")
+	println("mode(Y)      = argmax(fY.(ys)) = ", ys[argmax(fY.(ys))])
 	println("fY(mode(Y))  = fY(ys[argmax(fY.(ys))]) = ", fY(ys[argmax(fY.(ys))]))
-	annotate!(5.1, 0.93, text(L"ys[argmax(fY.(ys))] = 0.91", annotateFontSize))
+	annotate!(5.2, 0.94, text(L"\hat Y = mode(Y) = 0.91", annotateFontSize))
 	#----------------------------------------------------------------------------
 	# mode markers
 	plot!([modeX], [0.0], marker=:diamond, color=:red, markersize=markersize, label=L"mode(X)=6.5")                                                  # modeX 
@@ -857,7 +855,7 @@ function Bishop2023_DLFig2Dot123()
 	# correct transformed density f_Y(y)
 	plot!(ys, fY(ys), permute=(:y, :x), color=:red, linewidth=linewidth+1, label=L"f_Y(y)")
 	annotate!(0.7, 0.4, text(L"f_Y(y)", annotateFontSize))
-	annotate!(3.7, 0.98, text(L"f_Y(y)", annotateFontSize))
+	annotate!(3.5, 0.99, text(L"f_Y(y)", annotateFontSize))
 end # Bishop2023_DLFig2Dot123()
 
 # ╔═╡ e779b696-5f18-46b0-89ac-50629dd149bd
@@ -869,7 +867,7 @@ md"
 ###### 3.13 The Symbolic Derivative of $\frac{d}{dy}f_Y(y) =f'_Y(y)$
 In 3.1 (DLFC, (2.72)) we argued that *simple* transformations according to $\hat Y = g(\hat X), \hat X = g^{-1}(\hat Y)$ could only be made if $f_X(x), f_Y(y)$ were *differentiable, unconstrained* functions. This is *not* true for *densities*. These are constrained to *nonnegative* values and $\int f(x) dx = 1$.
 
-Instead we derived $mode(Y) = \hat Y$ *nontransformationally* either by computation of $argmax(f_Y(y))$ or by solving for the root of the zero-set derivative $f'_Y(y)=0$. In both cases we used numeric algorithms and got the value $mode(Y)=0.91$.
+Instead we derived $mode(Y) = \hat Y$ *transformation-free* either by computation of $argmax(f_Y(y))$ or by solving for the root of the *zero-set* derivative $f'_Y(y) = 0$. In both cases we used numeric algorithms and got the value $mode(Y) = 0.91$.
 
 Bishop & Bishop (2024, p. 43) prefer to present the *correction factor* (= *Jacobian*) in the transformation $(DLFC, (2.71))$ symbolically. We try to elaborate their ideas as far as possible in *Julia* graphics.
 
@@ -881,9 +879,9 @@ Then we have to calculate the *derivative* $f'_Y(y)$:
 
 $f'_Y(y) = \frac{d}{dy}(f_X(g^{-1}(y))|(g^{-1})'(y)|)=$
 
-$=\frac{(g^{-1})'(y)\left(g^{-1})'(y)^2f_X'((g^{-1})(y)) + f_X((g^{-1})(y))(g^{-1})''(y)\right)}{|(g^{-1})'(y)|}=$
+$=\frac{(g^{-1})'(y)\left(((g^{-1})'(y))^2f_X'((g^{-1})(y)) + f_X((g^{-1})(y))(g^{-1})''(y)\right)}{|(g^{-1})'(y)|}=$
 
-$=\frac{(g^{-1})'(y)}{|(g^{-1})'(y)|}\cdot\left(g^{-1})'(y)^2 \cdot f_X'((g^{-1})(y)) + f_X((g^{-1})(y)) \cdot (g^{-1})''(y)\right).$
+$=\frac{(g^{-1})'(y)}{|(g^{-1})'(y)|}\cdot\left(((g^{-1})'(y))^2 \cdot f_X'((g^{-1})(y)) + f_X((g^{-1})(y)) \cdot (g^{-1})''(y)\right).$
 
 If we abbreviate
 
@@ -895,12 +893,12 @@ $\forall y \in [0, 1]:s(y) = 1$
 
 the *derivative* simplifies to
 
-$f'_Y(y) = (g^{-1})'(y)^2f_X'((g^{-1})(y)) + f_X((g^{-1})(y))(g^{-1})''(y).$
+$f'_Y(y) = ((g^{-1})'(y))^2f_X'((g^{-1})(y)) + f_X((g^{-1})(y))(g^{-1})''(y).$
 
 If we reorder terms within brackets
 
 $f'_Y(y) = \tag{cf. DLFC, (2.73)}$
-$= f_X'((g^{-1})(y)) \cdot (g^{-1})'(y)^2 + f_X((g^{-1})(y))\cdot (g^{-1})''(y),$
+$= f_X'((g^{-1})(y)) \cdot ((g^{-1})'(y))^2 + f_X((g^{-1})(y))\cdot (g^{-1})''(y),$
 
 this expression is apart from minor differences in spelling virtually identical to (*DLFC, (2.73)*).
 
@@ -913,7 +911,7 @@ md"
 
 For bookkeeping purposes we denote the various factors of $f'_Y(y)$ with letters $a...d$. The correctness of the *symbolic* derivatives were crosschecked with [*Wolfram Alpha*](https://www.wolframalpha.com/).
 
-$f'_Y(y) = f_X'((g^{-1})(y)) \cdot (g^{-1})'(y)^2 + f_X((g^{-1})(y))\cdot (g^{-1})''(y)=$
+$f'_Y(y) = f_X'((g^{-1})(y)) \cdot ((g^{-1})'(y))^2 + f_X((g^{-1})(y))\cdot (g^{-1})''(y)=$
 $= a\cdot b^2 + c \cdot d.$
 
 where:
@@ -925,7 +923,7 @@ $c=f_X((g^{-1})(y))  := fX\_gInv(y)$
 $d_1=(g^{-1})''(y)   := gInvDD\_Symb(y) = \frac{2y-1}{(y-1)^2y^2}$
 $d_2=(g^{-1})''(y)   := gInvDD\_Num(y).$
 
-For the two *modes* $\hat X, \hat Y$ both *derivatives* $f'_Y(y) = f_X'((g^{-1})(y)) = 0$ have to be *zero*. But this could only be true when $\hat X = g^{-1}(\hat Y)$ and when the product $cd = f_X((g^{-1})(y))\cdot (g^{-1})''(y)$ is *zero*, too. The *transformational* assumption was ecluded above. But for $\hat X$ the derivative $f_X'((g^{-1})(y)) = 0$ but at the same time $f_X((g^{-1})(y)) = max !$.  
+For the two *modes* $\hat X, \hat Y$ both *derivatives* $f'_Y(\hat Y) = f_X'((g^{-1})(\hat Y)) = 0$ have to be *zero*. But this could only be true when $\hat X = g^{-1}(\hat Y)$ and when the product $cd = f_X((g^{-1})(y))\cdot (g^{-1})''(y)$ is *zero*, too. The *transformational* assumption was excluded above. But for $\hat X$ the derivative $f_X'((g^{-1})(\hat Y))$ is zero when at the same time $f_X((g^{-1})(y)) = max !$.  
 This makes things complicated so that cannot get $\hat Y = g(\hat X)$ by simple application of $g(.)$.
 
 "
@@ -971,7 +969,7 @@ For $f'_Y(g^{-1}(y))$ the following components are *necessary*
 # ╔═╡ d9b644a4-c59e-40e7-beb3-d7aedf5c2a1e
 function derivatives()
 	xs               = -85.0:Δx:15.0
-	x2s              = -2.5:Δx:4.5
+	x2s              = -4.0:Δx:4.0
 	ys               = 0.02:Δy:0.98
 	#------------------------------------
 	titlefontsize    = 12
@@ -1057,17 +1055,17 @@ The following plot displays the *densities*, *derivative* of *densities*, and $m
 - *before* the correction 
 $\text{density } c = f_X(g^{-1}(y); color=:blueviolet)$
 $\text{derivative of density } a = f'_X(g^{-1}(y)); color=:blueviolet, linestyle=:dash$
-$mode(Y)_{uncorrected} = ys\left[argmax(f_X(g^{-1}.(ys))\right]; color=:blueviolet, linestyle=:dash$
+$g(mode(X))_{uncorrected} = ys\left[argmax(f_X(g^{-1}.(ys))\right]; color=:blueviolet, linestyle=:dash$
 
 - *after* the correction
 $\text{density } f_Y(y); color=:red$
 $\text{derivative of density } a = f'_X(g^{-1}(y)); color=:red, linestyle=:dash$
 $mode(Y)_{corrected} = ys[argmax(f_Y.(ys))]; color=:red, linestyle=:dash$
 
-From the plotted results (below) we see that the retransformation $g^{-1}(y)$ of the $mode(Y)_{uncorrected}=0.82$ maps into $mode(X) = 6.5$. This is *not* true for $mode(Y)_{corrected}=0.91$
+From the plotted results (below) we see that the retransformation $g^{-1}(y)$ of the $g(mode(X))_{uncorrected}=0.82$ maps into $mode(X) = 6.5$. This is *not* true for $mode(Y)_{corrected}=0.91$
 
-$mode(Y)_{uncorrected} = 0.82$
-$g^{-1}(mode(Y)_{uncorrected}) = 6.516 ≈ mode(X) = \hat X$
+$g(mode(X))_{uncorrected} = 0.82$
+$g^{-1}(g(mode(X))_{uncorrected}) = 6.516 ≈ mode(X) = \hat X$
 $mode(Y)_{corrected} = 0.91$
 $g^{-1}(mode(Y)_{corrected}) = 7.314 > mode(X) = \hat X = 6.516$
 
@@ -1082,7 +1080,7 @@ function densitiesBeforeAndAfterTransormation()
 	linewidth     = 2.5
 	titlefontsize = 11
 	ylimits       = (-7.0, +13.0)
-	xlimits       = (-0.001, 1.14)
+	xlimits       = (-0.05, 1.14)
 	size          = (800, 800)
 	#--------------------------------------------------------------------------------
 	# derivative f'_Y(y)
@@ -1090,15 +1088,15 @@ function densitiesBeforeAndAfterTransormation()
 	#--------------------------------------------------------------------------------
 	plot(ys, fX_gInv(ys), title=L"before:c=f_X(g^{-1}(y)):=fX\_gInv.(ys); after:f_Y(y):=fY\_gInv.(ys)", titlefontsize=titlefontsize, permute=(:x, :y), ylimits=ylimits, xlimits=xlimits, color=:blueviolet, linewidth=linewidth, label = L"density\ before\ correction: c=f_X(g^{-1}(y)) := fX\_gInv.(ys)")
 	#
-	plot!(x2s, x -> ys[argmax(fX_gInv.(ys))], linewidth=linewidth-1, color=:blueviolet, linestyle=:dash, label=L"mode(Y)_{uncorrected} = ys\left[argmax(f_X(g^{-1}.(ys))\right] = 0.82")
+	plot!(x2s, x -> ys[argmax(fX_gInv.(ys))], linewidth=linewidth-1, color=:blueviolet, linestyle=:dash, label=L"c: g(mode(X))_{uncorrected} = ys\left[argmax(f_X(g^{-1}.(ys))\right] = 0.82")
 	#--------------------------------------------------------------------------------
-	println("mode(Y)_{uncorrected} = ", ys[argmax(fX_gInv.(ys))])
+	println("c: g(mode(X))_{uncorrected} = ", ys[argmax(fX_gInv.(ys))])
 	#--------------------------------------------------------------------------------
 	plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linestyle=:dash, linewidth=linewidth-1, label=L"constraint\ of\ derivative:\ a = f'(g^{-1}(y)) = 0")
 	#--------------------------------------------------------------------------------
 	plot!(ys, fXD_gInv.(ys), color=:blueviolet, permute=(:x, :y), linewidth=linewidth-1, label=L"derivative\ before\ correction: a = f'_X(g^{-1}(y))")
 	#--------------------------------------------------------------------------------
-	println("mode(Y)_{corrected}   = ", ys[argmax(fY.(ys))])
+	println("mode(Y)_{corrected}         = ", ys[argmax(fY.(ys))])
 	#--------------------------------------------------------------------------------
 	plot!(ys, fY.(ys), permute=(:x, :y), color=:red, linewidth=linewidth, label=L"corrected\ density\ f_Y(g^{-1}(y)):=fY\_gInv.(ys)")
 	#
@@ -1111,14 +1109,23 @@ end # function densitiesBeforeAndAfterTransormation()
 # ╔═╡ 064fbc16-56d1-416e-90c0-24a60ebeaba0
 densitiesBeforeAndAfterTransormation()
 
+# ╔═╡ fc82f0f5-d850-44f9-9726-9bccea28df3f
+logisticSigmoid(6.5)                     # ==> g(mode(X)) = 0.81 < mode(Y)
+
 # ╔═╡ d952f790-749c-48d0-a562-4e90393f0d65
-gInv(0.82)                               # ==> 6.516 --> :)
+gInv(0.82)                               # ==> g^{-1}(g(mode(X))) = 6.516 --> :)
 
 # ╔═╡ 6be4a020-234c-4600-a7fa-84ed6504718a
 abs(gInv(0.82) - modeX)                  # ==> 0.016 --> :)
 
 # ╔═╡ f9053506-b821-41d8-82a1-fc71a01b6d45
-gInv(0.91)                               # ==> 7.314 > 6.5 --> :(
+gInv(0.91)                               # ==> g^{-1}(mode(Y)) = 7.314 > 6.5 --> :(
+
+# ╔═╡ d0ae3cc0-59a5-4c39-b1b3-e2a7f8cccdf8
+md"
+---
+###### +++++++++++
+"
 
 # ╔═╡ 2201195a-bc2d-4286-a580-81154bf64e87
 md"
@@ -3176,16 +3183,18 @@ version = "1.13.0+0"
 # ╠═41b1196e-9f0a-4398-b5af-f442c0be2715
 # ╟─e60fb090-ea7b-4f27-8bb3-e4d9704f09d3
 # ╟─d9b644a4-c59e-40e7-beb3-d7aedf5c2a1e
-# ╠═a2aa8846-e540-4403-9da9-ad12b0622859
+# ╟─a2aa8846-e540-4403-9da9-ad12b0622859
 # ╟─34390199-86bc-4d48-a91c-2d5847fbabf9
-# ╠═9f52849a-621e-4e8e-a5a5-d711e301c617
+# ╟─9f52849a-621e-4e8e-a5a5-d711e301c617
 # ╠═064fbc16-56d1-416e-90c0-24a60ebeaba0
+# ╠═fc82f0f5-d850-44f9-9726-9bccea28df3f
 # ╠═d952f790-749c-48d0-a562-4e90393f0d65
 # ╠═6be4a020-234c-4600-a7fa-84ed6504718a
 # ╠═f9053506-b821-41d8-82a1-fc71a01b6d45
+# ╟─d0ae3cc0-59a5-4c39-b1b3-e2a7f8cccdf8
 # ╟─2201195a-bc2d-4286-a580-81154bf64e87
 # ╠═ab3ab979-0027-4a6c-a85a-d3ea8834aa19
-# ╠═a053117f-f2ff-49c0-9c7e-6f465a8e5bfb
+# ╟─a053117f-f2ff-49c0-9c7e-6f465a8e5bfb
 # ╠═fd53d5cb-e000-4144-9cb1-696aa962659c
 # ╟─4f24698d-3d7e-4656-b6bc-b566fdce7a69
 # ╟─cc6463bb-7878-4c4c-9fef-553ee17868ad
