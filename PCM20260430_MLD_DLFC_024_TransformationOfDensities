@@ -36,7 +36,7 @@ md"
 ====================================================================================
 #### MLD_DLFC, ch.02.4 Transformation Of Densities
 ##### file: PCM20260430\_MLD\_DLFC\_02.4\_TransformationOfDensities
-##### Julia/Pluto.jl: 1.12.6/0.20.4 by PCM *** 2026/06/17 ***
+##### Julia/Pluto.jl: 1.12.6/0.20.4 by PCM *** 2026/06/22 ***
 ====================================================================================
 "
 
@@ -47,9 +47,9 @@ md"
 
 This is my *MLD (= My Learning Diary)* for working through various *resources* (see *references*). *MLD* means that I work through the *resource* and, in this process, *experiment* with *my own* interpretations, adaptations, and improvements by *coding* in *Julia*.
 
-Now, we are looking at *how a probability density changes under a nonlinear transformation* (Bishop & Bishop, *DLFC* (= [*Deep Learning: Foundation and Concepts*](https://www.bishopbook.com/)), 2024, Ch. 2.4, p. 42ff). 
+Now, we are looking at *how a probability density* and a function of that density (e.g. the *mode*) changes under a *nonlinear* transformation ([*Bishop & Bishop, DLFC*, 2024, Ch. 2.4, p. 42ff](https://www.bishopbook.com/)). 
 
-*If the [probability density function]((https://en.wikipedia.org/wiki/Probability_density_function)) of a random variable (or a vector) $X$ is given as $f_X(x)$, it is possible ... to compute the probability density function of a variable $Y = g(X)$. This is also referred to as 'variable substitution' and is used in practice to generate a random variable of arbitrary form $f_{g(X)}(y) = f_Y(y)$ using a known (e.g., uniformly distributed) random number generator.*
+*If the [probability density function (= pdf)](https://en.wikipedia.org/wiki/Probability_density_function) of a random variable (or a vector) $X$ is given as $f_X(x)$, it is possible ... to compute the probability density function of a variable $Y = g(X)$. This is also refered to as 'variable substitution' and is used in practice to generate a random variable of arbitrary form $f_{g(X)}(y) = f_Y(y)$ using a known (e.g., uniformly distributed) random number generator.*
 
 In Bishop ([*PRML, 2006*, p.58](https://www.microsoft.com/en-us/research/wp-content/uploads/2006/01/Bishop-Pattern-Recognition-and-Machine-Learning-2006.pdf); notation slightly adapted to our spelling) we find exercise $_\text{**}1.4$: *Consider a probability density $f_X(x)$ defined over a continuous variable $X$, and suppose that we make a nonlinear change of variable using $X = g^{-1}(Y)$, so that the density transforms according to $(1.27):f_Y(y)=f_X(g^{-1}(y)\cdot|(g^{-1})'(y)|$. By differentiating $(1.27)$, show that the location $\hat Y$ of the maximum of the density in $Y$ is not in general related to the location $\hat X$ of the maximum of the density over $X$ by the simple functional relation $\hat X = g^{-1}(\hat Y)$ as a consequence of the Jacobian factor. This shows that the maximum of a probability density (in contrast to a simple function) is dependent on the choice of variable.*
 
@@ -61,8 +61,8 @@ Here we try to sketch a solution to [*Bishop's exercise 1.4*](https://www.micros
 md"
 ---
 ##### 1. Topics
-- [*change of variable*](https://en.wikipedia.org/wiki/Change_of_variables)
-- [*probability density*]((https://en.wikipedia.org/wiki/Probability_density_function))
+- [*change of variable*](https://en.wikipedia.org/wiki/Change_of_variables) $y = g(x)$
+- [*probability density function (= pdf)*]((https://en.wikipedia.org/wiki/Probability_density_function)) $f_X(x), f_Y(y)$
 - [*transformation of densities*](https://en.wikipedia.org/wiki/Probability_density_function)
 - [*Jacobian determinant*](https://en.wikipedia.org/wiki/Jacobian_matrix_and_determinant)
 - [*logistic*](https://en.wikipedia.org/wiki/Logistic_function), [*logit*](https://en.wikipedia.org/wiki/Logit) function
@@ -79,56 +79,62 @@ md"---
 ##### 3. Code
 ###### 3.1 [*Change of Variables*](https://en.wikipedia.org/wiki/Change_of_variables)
 
-In mathematics, a [*change of variables*](https://en.wikipedia.org/wiki/Change_of_variables) is a basic technique used to *simplify* problems in which the original variables are *replaced* with functions of other variables. The intent is that when expressed in *new* variables, the problem may become *simpler*, or equivalent to a better understood problem. The *tags* $DLFC$ refer to *Bishop & Bishop*'s, *DLFC* (= [*Deep Learning: Foundation and Concepts*](https://www.bishopbook.com/)), 2024.
+In mathematics, a [*change of variables*](https://en.wikipedia.org/wiki/Change_of_variables) is a basic technique used to *simplify* problems in which the original variables are *replaced* with functions of other variables. The intent is that when expressed in *new* variables, the problem may become *simpler*, or equivalent to a better understood problem. The *tags* $DLFC$ refer to *Bishop & Bishop*'s, *DLFC* (= [*Deep Learning: Foundation and Concepts*](https://www.bishopbook.com/)) though *DLFC* uses a slightly different spelling.
 
-Suppose a single *random* variable $X$ is changed by a *monotonic, differentiable* transformation $Y=g(X)$. Then:
+Suppose a single *random* variable $X$ is changed by a *monotonic, differentiable* transformation $g(.)$. 
 
-$Y = g(X),$     
-$X = g^{-1}(Y),$  
-$X = g^{-1}(g(X))\;\text{ and }$
+Then:
 
-$Y = g(g^{-1}(Y)).$
+$y = g(x),$     
+$x = g^{-1}(y),$  
+$x = g^{-1}(g(x))\;\text{ and }$
 
-Now a function $f(X)$ becomes a *transformed* function $\tilde f(Y)$ defined as
+$y = g(g^{-1}(y)).$
 
-$\tilde f(Y) = f(g^{-1}(Y)) = f(X) \tag{cf. DLFC, (2.70)}.$
+Now a function $f(x)$ becomes a *new* function $\tilde f(y)$ defined as
+
+$\tilde f(y) = f(g^{-1}(y)) \tag{cf. DLFC, (2.70)}.$
 
 Its *derivative* is according to the *chain rule*:
 
-$\tilde f'(Y) = f'(g^{-1}(Y))(g^{-1})'(Y)$
+$\tilde f'(y) = f'(g^{-1}(y))(g^{-1})'(y)$
 
-and for *modes* $\hat Y, \hat X$ plugged into the derivative
+and for *modes* $\hat y, \hat x$ plugged into the derivative
 
-$\tilde f'(\hat Y) = f'(g^{-1}(\hat Y))(g^{-1})'(\hat Y)\tag{cf. DLFC, (2.72)}.$
+$\tilde f'(\hat y) = f'(g^{-1}(\hat y))(g^{-1})'(\hat y) = 0\tag{cf. DLFC, (2.72)}.$
 
-This is correct, because at *modes* $\hat X, \hat Y$ the derivatives should be zero
+This is correct, because at *modes* $\hat x, \hat y$ the following derivatives should be:
 
-$f'(\hat X) = f'(g^{-1}(\hat Y)) = 0\;\text{ and }\tilde f'(\hat Y) = 0.$
+$\tilde f'(\hat y) = 0 \;\text{ and } f'(g^{-1}(\hat y)) = 0$
 
-If the functions $\tilde f, f$ were *monotonic, differentiable* but otherwise *unconstrained* functions we *could* derive the $mode(Y) = \hat Y$ by simple plugging $mode(X) = \hat X$ into the transformation function $g(X)$:
+and the factor $(g^{-1})'(\hat y)$ should be:
 
-$\hat Y = g(\hat X).$
+$(g^{-1})'(\hat y) \neq 0.$
 
-However, this holds *only* if $f$ is an *unrestricted* function. This *does not* apply to probability density functions. These are *restricted* in that they are *non-negative* and have an *integral* of measure 1.
+If the functions $\tilde f, f$ would *monotonic, differentiable* but otherwise *unconstrained* functions we *could* derive *mode* $\hat y$ by simple plugging $\hat x$ into the transformation function $g(.)$:  
 
-So the *relation* between *modes* $\hat Y, \hat X$ is defined by $DLFC, (2.72).$
+$\hat y = g(\hat x).$
+
+However, this holds *only* if $f$ were an *unrestricted* function. This *does not* apply to *probability density functions* $\tilde f, f$. These are *restricted* in that they are *non-negative* (= *1st* constraint) and have an *integral* of measure 1 (= *2nd* constraint).
+
+So the *relation* between *modes* $\hat y, \hat x$ is defined by $DLFC, (2.72).$
 
 "
 
 # ╔═╡ d65efefe-5f89-4779-8143-f46a5532390a
 md"
 ---
-###### 3.2 Examples for $g(X)$ and $g^{-1}(Y)$: the *Logistic Sigmoid* and the *Logit* Function
+###### 3.2 Examples of $g(x)$ and $g^{-1}(y)$: the *Logistic Sigmoid* and the *Logit* Function
 
 An example pair for the *nonlinear* transformation of variables $X ≥ 0, Y \in [0, 1]$ is:
 
 - *Logistic Sigmoid* (from $X \in \mathbb R^+$ to probabilities $Y \in \mathbb P$ )
 
-$Y = g(X) := \frac{1}{1 + \exp(5 - X)},$
+$y = g(x) := \frac{1}{1 + \exp(5 - x)},$
 
-- *Logit* (= *log odds*) transformation of variables (from probabilities $Y \in \mathbb P$ to $x \in \mathbb R^+$ )
+- *Logit* (= *log odds*) transformation of variables (from probabilities $Y \in \mathbb P$ to $X \in \mathbb R^+$ )
 
-$X = g^{-1}(Y) := \ln\left(\frac{Y}{1 - Y}\right) + 5.$
+$x = g^{-1}(y) := \ln\left(\frac{y}{1 - y}\right) + 5.$
 
 "
 
@@ -162,15 +168,15 @@ function plotSigmoidLogit()
 	linewidth = 2
     #-------------------------------------------------------------------------------
 	pl1 = 
-		plot(size=size, title=L"Logistic\ sigmoid: Y = g(X) :=\frac{1}{1+exp(5-X)}", titlefontsize=titlefontsize, xs, g, color=:blueviolet, linewidth=linewidth, label=L"g(X)", xlabel=L"X", ylabel=L"Y (= p)")
+		plot(size=size, title=L"Logistic\ sigmoid: y = g(x) :=\frac{1}{1+exp(5-x)}", titlefontsize=titlefontsize, xs, g, color=:blueviolet, linewidth=linewidth, label=L"g(x)", xlabel=L"X", ylabel=L"Y (= p)")
 	pl2 = 
-		plot(size=size, title=L"Logit: X = g^{-1}(Y) := \ln\left(\frac{Y}{1-Y}\right) + 5", titlefontsize=titlefontsize, ys, gInv, color=:blueviolet, linewidth=linewidth, label=L"g^{-1}(Y)", xlabel=L"Y (= p)", ylabel=L"X")
+		plot(size=size, title=L"Logit: x = g^{-1}(y) := \ln\left(\frac{y}{1-y}\right) + 5", titlefontsize=titlefontsize, ys, gInv, color=:blueviolet, linewidth=linewidth, label=L"g^{-1}(y)", xlabel=L"Y (= p)", ylabel=L"X")
 	pl3 = 
-		plot(size=size, title=L"X = g^{-1}(g(X))", titlefontsize=titlefontsize, 
-		xs, gInv.(g.(xs)), color=:blueviolet, linewidth=linewidth, label=L"(X, X)", xlabel=L"X", ylabel=L"X")
+		plot(size=size, title=L"x = g^{-1}(g(x))", titlefontsize=titlefontsize, 
+		xs, gInv.(g.(xs)), color=:blueviolet, linewidth=linewidth, label=L"(x, x)", xlabel=L"X", ylabel=L"X")
 	pl4 = 
-		plot(size=size, title=L"Y = g(g^{-1}(Y))", titlefontsize=titlefontsize, 
-		ys, g.(gInv.(ys)), color=:blueviolet, linewidth=linewidth, label=L"(Y, Y)", xlabel=L"Y", ylabel=L"Y")
+		plot(size=size, title=L"y = g(g^{-1}(y))", titlefontsize=titlefontsize, 
+		ys, g.(gInv.(ys)), color=:blueviolet, linewidth=linewidth, label=L"(y, y)", xlabel=L"Y", ylabel=L"Y")
     #-------------------------------------------------------------------------------
 	plot(pl1, pl2, pl3, pl4, layout=(2,2))
 end # function plotSigmoidLogit()
@@ -197,13 +203,13 @@ We stick with the *first* spelling in **3.1**.
 # ╔═╡ af2cf871-8a3e-4506-b43d-cc540938827c
 md"
 ---
-###### 3.4 *PMF* $p_X=N(X;μ_X, \sigma_X)$, *Logistic Sigmoid* $g(X)$, and two Naive Guesses of *PDFs* $f_Y(y)$
+###### 3.4 *PMF* $p_X=N(X=x;μ_X, \sigma_X)$, *Logistic Sigmoid* $g(x)$, and two Naive Guesses of *PDFs* $f_Y(y)$
 
-- Now we plot the discrete *Gaussian* probability mass function (PMF) $p_X$ as a *histogram* with $μ_X = mode(X) = \hat X =6.5$ and $σ_X=1.0$. To do this, we generated $nSamples=10^5$ *Gaussian* random numbers. 
+- Now we plot the discrete *Gaussian* probability mass function (pmf) $p_X$ as a *histogram* with $μ_X = mode(X) = \hat x =6.5$ and $σ_X=1.0$. To do this, we generated $nSamples=10^5$ *Gaussian* random numbers. 
 
-- Additionally, we have plotted the *logistic sigmoid function*, which serves as the *transformation function* $g(X)$. We *tentatively* used $g(X)$ to transform $\hat X$, thereby obtaining a (wrong) expectation about $\hat Y = g(\hat X)$. 
+- Additionally, we have plotted the *logistic sigmoid function*, which serves as the *transformation function* $g(x)$. We *tentatively* used $g(x)$ to transform $\hat x$, thereby obtaining a (wrong) expectation about $\hat y:\ \hat y = g(\hat x)$. 
 
-- Third, we have plotted *two* guesses of transformed *PDFs* $f_{1Y}(y), f_{2Y}(y)$. Both guesses assume that $\hat Y = g(\hat X)$. Furthermore, the first guess ($f_{1Y}(y)$, $:green, :dash$) assumes that $σ_Y$ is a simple transform $σ_Y=g(σ_X)$. However, the plot shows that this is a rather *narrow* guess. The second estimate ($f_{2Y}(y)$, $:lightgreen$) assumes that $σ_Y=σ(g(X))$. This guess seems to be more realistic. But its correctness has to be verified by further evidence.
+- Third, we have plotted *two* guesses of transformed *pdfs* $f_{1Y}(y), f_{2Y}(y)$. Both guesses assume the erroneous $\hat y = g(\hat x)$. Furthermore, the first guess ($f_{1Y}(y)$, $:green, :dash$) assumes that $σ_Y$ is a simple transform $σ_Y=g(σ_X)$. However, the plot shows that this is a rather *narrow* guess. The second estimate ($f_{2Y}(y)$, $:lightgreen$) assumes that $σ_Y=σ(g(x))$. This guess seems to be more realistic. But its correctness has to be verified by further evidence.
 
 "
 
@@ -223,15 +229,15 @@ function myGaussianPlot()
 	linewidth = 4
 	markersize = 14
 	#------------------------------------------------------------------------------
-	plot(title=L"Logistic\ Sigmoid\ Y = g(X), PMF\ p_X, and\ Guesses\ of\ PDFs\ f_{1Y}(y), f_{2Y}(y)", titlefontsize=titlefontsize, guidefontsize=guidefontsize, size=size, xlimits=xlimits, ylimits=ylimits, legendfontsize=legendfontsize)
-	plot!(xs, g, label=L"Logistic\ Sigmoid\ g(X)", linewidth=linewidth, color=:blueviolet, xlabel=L"X", ylabel=L"Y\ \ (=P)")
-	annotate!(8.8, 1.02, text(L"g(X)=Logistic\ Sigmoid", annotateFontSize))
-	annotate!(2.2, 0.10, text(L"g(X)", annotateFontSize))
+	plot(title=L"Logistic\ Sigmoid\ y = g(x), PMF\ p_X, and\ Guesses\ of\ PDFs\ f_{1Y}(y), f_{2Y}(y)", titlefontsize=titlefontsize, guidefontsize=guidefontsize, size=size, xlimits=xlimits, ylimits=ylimits, legendfontsize=legendfontsize)
+	plot!(xs, g, label=L"Logistic\ Sigmoid\ g(x)", linewidth=linewidth, color=:blueviolet, xlabel=L"X", ylabel=L"Y\ \ (= P)")
+	annotate!(8.8, 1.02, text(L"g(x)=Logistic\ Sigmoid", annotateFontSize))
+	annotate!(2.2, 0.10, text(L"g(x)", annotateFontSize))
 	#------------------------------------------------------------------------------
 	# histogram of N(x; μ_x=modeX=6.5, σ_x=1)
-	histogram!(randomXs, normalize=:true, color=:red, label=L"p_X=N(X; μ_X=modeX=6.5, σ_X=1)")
+	histogram!(randomXs, normalize=:true, color=:red, label=L"pmf\ p_X=N(X=x; μ_X=\hat x = 6.5, σ_X=1)")
 	annotate!(8.3, 0.47, text(L"pmf\ p_X=", annotateFontSize))
-	annotate!(8.5, 0.42, text(L"N(X; μ_X=modeX=6.5, σ_X=1)", annotateFontSize))
+	annotate!(8.5, 0.42, text(L"N(X; μ_X=\hat x = 6.5, σ_X=1)", annotateFontSize))
 	#------------------------------------------------------------------------------
 	# mode marker line: vertical up from modeX to logistic sigmoid
 	plot!([modeX, modeX], [0.0, g(modeX)], ls =:dash, linewidth=linewidth-1, color=:blueviolet, label=false) 
@@ -239,20 +245,20 @@ function myGaussianPlot()
 	plot!([modeX, 0.0], [g(modeX), g(modeX)], ls =:dash, linewidth=linewidth-1,  color=:orange, label=false)
 	#------------------------------------------------------------------------------
 	# mode markers
-	plot!([modeX], [0.0], marker=:diamond, color=:red, markersize=markersize, label=L"mode(X) = \hat X = 6.5")                                                 
-	plot!([0.0], [g(modeX)], marker=:diamond, color=:orange, markersize=markersize, label=L"g(mode(X)) = g(\hat X) = 0.82")                   
+	plot!([modeX], [0.0], marker=:diamond, color=:red, markersize=markersize, label=L"mode(X) = \hat x = 6.5")                                                 
+	plot!([0.0], [g(modeX)], marker=:diamond, color=:orange, markersize=markersize, label=L"erroneous\ g(mode(X)) = g(\hat x) = 0.82")                   
 	#------------------------------------------------------------------------------
 	# 1st tentative PDF f_Y
 	plot!(permute=(:x, :y), 
 		ys, pdf.(Normal(g(modeX), g(σXs)), ys), 
-		label=L"f_1_Y(y) = N(Y;g(modeX), g(σXs))", color=:green, linewidth=linewidth-2,  	linestyle=:dash)
+		label=L"f_1_Y(y) = N(Y=y;g(\hat x), g(σ_X))", color=:green, linewidth=linewidth-2,  	linestyle=:dash)
 	annotate!(6.0, 0.89, text(L"f_1_Y(y)", annotateFontSize))
 	annotate!(8.5, 0.76, text(L"f_1_Y(y)", annotateFontSize))
 	#------------------------------------------------------------------------------
 	# 2nd tentative PDF f_Y
 	plot!(permute=(:x, :y), 
 		  ys, pdf.(Normal(g(modeX), σYs), ys), 
-		  label=L"f_2_Y(y) = N(Y;g(modeX), σY))", color=:lightgreen, linewidth=linewidth)
+		  label=L"f_2_Y(y) = N(Y=y;g(\hat x), σ(g(x)))", color=:lightgreen, linewidth=linewidth)
 	annotate!(2.5, 0.68, text(L"f_2_Y(y)", annotateFontSize))
 	#------------------------------------------------------------------------------
 end # function myGaussianPlot()
@@ -265,11 +271,11 @@ md"
 ---
 ###### 3.5 *Gaussian PMF* $p_X$, *Logistic Sigmoid* Transformation $g(X)$, and *PMF* $p_Y$
 
-- Now, let’s add a *histogram* representing the discrete *probability mass function (PMF)* $p_Y(y)$. To do this, we transform each of the generated $10^5$ *Gaussian* random numbers by application of $g(X).$ It is clearly evident from visual inspection that $p_Y(y)$ is *left-skewed* and *non-Gaussian*. Furthermore, its mode $\hat Y$ is *not* a function value of $g(X)$:
+- Now, let’s add a *histogram* representing the discrete *probability mass function (pmf)* $p_Y(y)$. To do this, we transform each of the generated $10^5$ *Gaussian* random numbers by application of $g(X).$ It is clearly evident from visual inspection that $p_Y(y)$ is *left-skewed* and *non-Gaussian*. Furthermore, its *mode* $\hat y$ is *not* a function value of $g(.)$:
 
-$\hat Y ≠ g(\hat X).$
+$\hat y ≠ g(\hat x).$
 
-- Because of $\hat Y ≠ g(\hat X)$ we see that *PMF* $p_Y(x)$ *cannot* be fitted by the 2nd guess $f_{2Y}(y)$ (in :lightgreen).
+- Because of $\hat y ≠ g(\hat x)$ we see that *pmf* $p_Y(x)$ *cannot* be fitted by the 2nd guess $f_{2Y}(y)$ (in :lightgreen).
 
 - The complete plot is a reconstruction of [*fig.2.12*](https://github.com/probml/pml2-book/releases/latest/download/book2.pdf) in *Murphy (2023, ch. 2.5.1, p.45)*.
 "
@@ -291,15 +297,15 @@ function murphy2023_BookII_Fig2Dot12_1()
 	linewidth = 4
 	markersize = 14
 	#------------------------------------------------------------------------------
-	plot(title=L"Logistic\ Sigmoid\ Y = g(X),\ Probability\ Mass\ Functions\ p_X,\ and\ p_Y", titlefontsize=titlefontsize, legendfontsize=legendfontsize, guidefontsize=guidefontsize, size=size, xlimits=xlimits, ylimits=ylimits)
-	plot!(xs, g, label=L"Logistic\ Sigmoid\ g(X)", lw=4, color=:blueviolet, xlabel=L"X", ylabel=L"Y\ \ (=P)")
-	annotate!(8.8, 0.87, text(L"g(X)=Logistic\ Sigmoid", annotateFontSize))
-	annotate!(2.2, 0.10, text(L"g(X)", annotateFontSize))
+	plot(title=L"Logistic\ Sigmoid\ y = g(x),\ Probability\ Mass\ Functions\ p_X,\ and\ p_Y", titlefontsize=titlefontsize, legendfontsize=legendfontsize, guidefontsize=guidefontsize, size=size, xlimits=xlimits, ylimits=ylimits)
+	plot!(xs, g, label=L"Logistic\ Sigmoid\ g(x)", lw=4, color=:blueviolet, xlabel=L"X", ylabel=L"Y\ \ (=P)")
+	annotate!(8.8, 0.87, text(L"g(x)=Logistic\ Sigmoid", annotateFontSize))
+	annotate!(2.2, 0.10, text(L"g(x)", annotateFontSize))
 	#------------------------------------------------------------------------------
 	# histogram of N(x; μ_x=modeX=6.5, σ_x=1)
-	histogram!(randomXs, normalize=:true, color=:red, label=L"pmf\ p_X=N(X; μ_X=modeX=6.5, σ_X=1)")
+	histogram!(randomXs, normalize=:true, color=:red, label=L"pmf\ p_X=N(X; μ_X=\hat x=6.5, σ_X=1)")
 	annotate!(8.3, 0.47, text(L"pmf\ p_X=", annotateFontSize))
-	annotate!(8.5, 0.42, text(L"=N(X; μ_X=mode(X)=6.5, σ_X=1)", annotateFontSize))
+	annotate!(8.5, 0.42, text(L"=N(X; μ_X=\hat x=6.5, σ_X=1)", annotateFontSize))
 	#------------------------------------------------------------------------------
 	# histogram of p_Y(Y; μ_Y, σ_Y)
 	histogram!(randomYs, normalize=:true, permute=(:y, :x), color=:green, label=L"pmf\ p_Y(Y; μ_Y, σ_Y)")
@@ -311,13 +317,13 @@ function murphy2023_BookII_Fig2Dot12_1()
 	plot!([modeX, 0.0], [modeY, modeY], ls =:dash, lw=linewidth-1, color=:orange, label=false)
 	#------------------------------------------------------------------------------
 	# mode markers
-	plot!([modeX], [0.0], marker=:diamond, color=:red, markersize=10, label=L"mode(X)=\hat X=6.5")                                                 
-	plot!([0.0], [g(modeX)], marker=:diamond, color=:orange, markersize=10, label=L"g(mode(X)) = g(\hat X) = 0.82")        
+	plot!([modeX], [0.0], marker=:diamond, color=:red, markersize=10, label=L"\hat x=6.5")                                                 
+	plot!([0.0], [g(modeX)], marker=:diamond, color=:orange, markersize=10, label=L"erroneous\ g(\hat X) = 0.82")        
 	#------------------------------------------------------------------------------
 	# 2nd tentative PDF f_Y
 	plot!(permute=(:x, :y), 
 		  ys, pdf.(Normal(g(modeX), σY), ys), 
-		  label=L"f_{2Y}(y)=N(Y;g(modeX), σY))", color=:lightgreen, lw=4)
+		  label=L"f_{2Y}(y)=N(Y;g(\hat x), σ_Y))", color=:lightgreen, lw=4)
 	annotate!(2.5, 0.68, text(L"f_2_Y(y)", annotateFontSize))
 	#------------------------------------------------------------------------------
 end # murphy2023_BookII_Fig2Dot12.1()
@@ -330,19 +336,19 @@ md"
 ---
 ###### 3.6 The three *Naive Attempts* to Derive *PDF* $f_Y$
 We have attempted to derive the transformed density $f_Y$ by two *naive* approaches:
-- 1st approach ($:green, :dash$): we keep the *Gaussian* shape with transformed $μ_Y=g(\hat X), σ_Y=g(σ_X)$. We saw that its density's $σ_Y$ is far *too narrow*.:
+- 1st approach ($:green, :dash$): we keep the *Gaussian* shape with transformed $μ_Y=g(\hat x), σ_Y=g(σ_X)$. We saw that its density's $σ_Y$ is far *too narrow*.:
 
-$f_{1Y}(y) = N(Y;μ_Y=g(\hat X), σ_Y=g(σ_X))$
+$f_{1Y}(y) = N(Y=y;μ_Y=g(\hat x), σ_Y=g(σ_X))$
 
-- 2nd approach ($:lightgreen$): we keep the *Gaussian* shape with transformed $g(\hat X)$ but $σ_Y$  *estimated* from $Y$-data:
+- 2nd approach ($:lightgreen$): we keep the *Gaussian* shape with transformed $g(\hat x)$ but $σ_Y$  *estimated* from $Y$-data:
 
-$f_{2Y}(y) = N(Y;μ_Y=g(\hat X), \hat σ_Y)$
+$f_{2Y}(y) = N(Y;μ_Y=g(\hat x), \hat σ_Y)$
 
 Now we explore a third more *sophisticated* but still a *naive* guess of $f_{3Y}(y)$:
 
-- 3rd approach ($:orange$): we see from the *pmf* $p_Y$ that we have a *skew-symmetric* distribution. So we estimate the paramaters $ξ$ (=location), $ω$ (=scale), $α$ (=shape) of its *pdf* $f_Y$ by *maximum-likelihood*:
+- 3rd approach ($:orange$): we see from the *pmf* $p_Y$ that we have a *skew-symmetric* distribution. So we estimate the parameters $ξ$ (=location), $ω$ (=scale), $α$ (=shape) of its *pdf* $f_Y$ by *maximum-likelihood*:
 
-$f_Y(Y;\hat ξ=0.97, \hat ω=0.25, \hat α=-21.78)$
+$f_Y(y;\;\hat ξ=0.97, \hat ω=0.25, \hat α=-22.25)$
 
 Since the first approach is too unrealistic to represent the *pmf* $p_Y$ we present graphically below only the *2nd* and *3rd* density guesses ($:lightgreen, :orange$).
 To evaluate the quality of the 3rd approach we still have to project it into the *pmf* space.
@@ -387,9 +393,9 @@ end # let
 md"
 ---
 ###### 3.7 *Projection* of Naive Guesses $f_{2Y}(y), f_{3Y}(y)$ into *PMF* (= *Histogram*)-Space 
-We have plotted the second ($:lightgreen$) and third ($:orange$) guesses *pdfs* $f_{2Y}, f_{3Y}$ onto the *PMF* $p_Y$ ($:blue$, figure below). We can see that *no* guess fits the *PMF* $p_Y$ perfectly. A comparison with fig. 2.12 in (Bishop & Bishop, 2024, ch.2.4, p.44) shows that our *2nd* trial ($:lightgreen$) is closer to *Bishop*'s guess (also in $:lightgreen$).
+We have plotted the second ($:lightgreen$) and third ($:orange$) guesses *pdfs* $f_{2Y}, f_{3Y}$ onto *pmf* $p_Y$ ($:blue$, *below*). We can see that *no* guess fits *pmf* $p_Y$ perfectly. A comparison with fig. 2.12 in (Bishop & Bishop, 2024, ch.2.4, p.44) shows that our *2nd* trial ($:lightgreen$) is closer to *Bishop*'s *guess* (also in $:lightgreen$).
 
-However, the mathematical *correct* approach to transfom the *pdf* $f_X$ in the case of the *nonlinear* variable transform $g(X), g^{-1}(Y)$ is *still missing*.
+However, the mathematical *correct* approach to transfom the *pdf* $f_X$ in the case of a *nonlinear* variable transform $g(X), g^{-1}(Y)$ is *still missing*.
 
 " 
 
@@ -416,15 +422,15 @@ function murphy2023_BookII_Fig2Dot12_2()
 		-sum(logpdf.(dist, randomYs))
 	end # function negLogLikelihood(params)
 	#-------------------------------------------------------------------------------
-	plot(title=L"Y = g(X),\ PMFs\ p_X,\ p_Y, PDF\ f_X, and\ Guesses\ f_{2Y}, f_{3Y}", titlefontsize=titlefontsize, guidefontsize=guidefontsize,legendfontsize=legendfontsize, size=size, xlimits=xlimits, ylimits=ylimits)
-	plot!(xs, g, label=L"Logistic\ Sigmoid\ g(X)", lw=4, color=:blueviolet, xlabel=L"X", ylabel=L"Y\ \ (=P)")
-	annotate!(8.8, 0.87, text(L"g(X)=Logistic\ Sigmoid", annotateFontSize))
-	annotate!(2.2, 0.10, text(L"g(X)", annotateFontSize))
+	plot(title=L"y = g(x),\ PMFs\ p_X,\ p_Y, PDF\ f_X, and\ Guesses\ f_{2Y}, f_{3Y}", titlefontsize=titlefontsize, guidefontsize=guidefontsize,legendfontsize=legendfontsize, size=size, xlimits=xlimits, ylimits=ylimits)
+	plot!(xs, g, label=L"Logistic\ Sigmoid\ g(x)", lw=4, color=:blueviolet, xlabel=L"X", ylabel=L"Y\ \ (=P)")
+	annotate!(8.8, 0.87, text(L"g(x)=Logistic\ Sigmoid", annotateFontSize))
+	annotate!(2.2, 0.10, text(L"g(x)", annotateFontSize))
 	#-------------------------------------------------------------------------------
 	# histogram of p_X = N(x; μ_x=modeX=6.5, σ_x=1)
-	histogram!(randomXs, normalize=:true, color=:dodgerblue, label=L"p_X = N(X; μ_X=\hat X=6.5, σ_X=1)")
+	histogram!(randomXs, normalize=:true, color=:dodgerblue, label=L"p_X = N(X=x; μ_X=\hat x=6.5, σ_X=1)")
 	annotate!(8.3, 0.47, text(L"pmf\ p_X =", annotateFontSize))
-	annotate!(8.5, 0.42, text(L"N(X; μ_X=\hat X=6.5, σ_X=1)", annotateFontSize))
+	annotate!(8.5, 0.42, text(L"N(X; μ_X=\hat x=6.5, σ_X=1)", annotateFontSize))
 	#-------------------------------------------------------------------------------
 	# histogram of p_Y(Y; μ_Y, σ_Y)
 	histogram!(randomYs, normalize=:true, permute=(:y, :x), color=:deepskyblue, label=L"p_Y(Y; μ_Y, σ_Y)")
@@ -436,19 +442,19 @@ function murphy2023_BookII_Fig2Dot12_2()
 	plot!([modeX, 0.0], [modeY, modeY], ls =:dash, lw=linewidth-1, color=:orange, label=false)
 	#-------------------------------------------------------------------------------
 	# mode markers
-	plot!([modeX], [0.0], marker=:diamond, color=:red, markersize=10, label=L"\hat X = 6.5")                                                       # mode(X)
-	plot!([0.0], [modeY], marker=:diamond, color=:orange, markersize=10, label=L"g(\hat X)=0.82")                                      # mode(Y)
+	plot!([modeX], [0.0], marker=:diamond, color=:red, markersize=10, label=L"\hat x = 6.5")                                                                # mode(X)
+	plot!([0.0], [modeY], marker=:diamond, color=:orange, markersize=10, label=L"erroneous\ g(\hat x)=0.82")                                    # mode(Y)
 	#-------------------------------------------------------------------------------
 	# PDF f_X
 	gaussNX     = Normal(modeX, 1)                   # standard Gaussian N(x;0,1)
 	pdfsGaussNX = pdf.(gaussNX, xs)                  # density of Gaussian f_X
-	plot!(xs, pdf.(gaussNX, xs), label=L"f_X(x)=N(X;μ_X=\hat X, σ_X=1)", color=:red, lw=5)
+	plot!(xs, pdf.(gaussNX, xs), label=L"f_X(x)=N(X=x;μ_X=\hat x, σ_X=1)", color=:red, lw=5)
 	annotate!(8.1, 0.24, text(L"f_X(x)", annotateFontSize))
 	#-------------------------------------------------------------------------------
 	# 2nd tentative PDF f_Y
 	plot!(size=size,
 		permute=(:y, :x), ys, pdf.(Normal(g(modeX), σY), ys), 
-		label=L"f_{2Y}(y)=N(Y;g(\hat X), σY))", color=:lightgreen, lw=4)
+		label=L"f_{2Y}(y)=N(Y=y;g(\hat x), σY))", color=:lightgreen, lw=4)
 	annotate!(2.5, 0.7, text(L"f_{2Y}(y)", annotateFontSize))
 	#-------------------------------------------------------------------------------
 	# 3rd tentative PDF f_Y
@@ -471,9 +477,10 @@ murphy2023_BookII_Fig2Dot12_2()
 md"
 ---
 ###### 3.8 Transformation of *Densities* and the [*Jacobian Determinant*](https://en.wikipedia.org/wiki/Jacobian_matrix_and_determinant)
-A *change of variables* $Y = g(X)$ has a *different* effect whether a function $f(X)$ is a *density* or a common *monotonic* but otherwise *unconstrained* function. 
 
-A density is *constrained* to *nonnegative* values (*1st* constraint) and $\int f(x) dx = 1$ (*2nd* constraint). Thus the effect of a variable change $Y = g(X)$ on a density $f_X(x)$ *cannot* be calculated by the simple transformation
+A *change of variables* $y = g(x); x = g^{-1}(y)$ has a *different* effect whether a function $f(x)$ is a *density* or a common *monotonic* but otherwise *unconstrained* function. 
+
+A density is *constrained* to *nonnegative* values (*1st* constraint) and $\int f(x) dx = 1$ (*2nd* constraint). Thus the effect of a *variable change* $y = g(x)$ on a density $f_X(x)$ *cannot* be calculated by the simple transformation
 
 $f_Y(y) \cancel{:=} f_X(g^{-1}(y)) \tag{cf. DLFC, (2.70)}.$ 
 
@@ -520,7 +527,7 @@ $(g^{-1})'(y) = \frac{dg^{-1}(y)}{dy} = \frac{d \ln\left(\frac{y}{1 - Y}\right) 
 so that the *transformed* density $f_Y(y)$ for the *logistic-logit* case is
 
 $f_Y(y) = f_X(g^{-1}(y)) \cdot \left|\frac{1}{y-y^2}\right| =$
-$=N\left(g^{-1}(y); μ_X=\hat X, \sigma_X=1\right)\cdot \left|\frac{1}{y-y^2}\right|.$
+$=N\left(X=g^{-1}(y); μ_X=\hat x, \sigma_X=1\right)\cdot \left|\frac{1}{y-y^2}\right|.$
 
 The Julia code including the *broadcasting* operator '$.$' is
 
@@ -529,13 +536,15 @@ $f_Y(y) := pdf.(Normal(modeX, σX), gInv.(ys)) .* abs.(1.0 ./(ys .- ys.^2)).$
 
 We plot $f_Y(y)$ in its *rudimentary* form $f_{4Y}(y)$ *without* the *correction* factor $\left|\frac{1}{y-y^2}\right|$ (left, below) and in its *complete* form $f_Y(y)$ *including* it (right, below). 
 
+The short hand for term $f_X(g^{-1}(y);μ_X, σ_X)$ is *term c*.
+
 It is clear that only the *complete* form, including the *correction factor* $\left|\frac{1}{y-y^2}\right|$, fits the *pmf* $p_Y$ perfectly.
 
 "
 
 # ╔═╡ 9db11048-f743-4fd6-9374-d920df3e6398
 # c = f_X(g^{-1}(y)) without correction factor
-fX_gInv(ys) = pdf.(Normal(modeX, σX), gInv.(ys))  # density without correction factor
+fX_gInv(ys) = pdf.(Normal(modeX, σX), gInv.(ys))  # density excl. correction factor
 
 # ╔═╡ a679883f-c97c-41f4-8333-41b0b998099b
 # f_Y(y) including correction factor              # density incl. correction factor
@@ -578,18 +587,12 @@ let	randomXs         = randn(nSamples).+ modeX
 	plot(pl8, pl9, layout=(1,2))
 end # let
 
-# ╔═╡ b421e33b-3692-4d12-b2ce-c65c0e2a57c3
-md"
----
-###### 2026/06/17
-"
-
 # ╔═╡ ab462070-74e3-4f16-b1e3-d119418ee376
 md"
 ---
 ###### 3.10 Projection of Guesses $f_{2Y}(y), f_{3Y}(y), f_{4Y}(y)$ and *PDF* $f_Y(y)$ into *PMF* (=Histogram) Space
 
-This is a reconstruction of *fig. 2.12* from Bishop % Bishop (2024, p.44). The focus is on the plot of transformed density $f_Y(y) (:red)$. Unlike *fig.2.12* we have added the guesses $f_{2Y}(y) (:lightgreen), f_{3Y}(y) (:orange), \text{ and } c = f_{4Y}(y) (:blueviolet)$.
+This is a reconstruction in *Julia* of *fig. 2.12* from Bishop & Bishop (2024, p.44). The focus is on the plot of transformed density $f_Y(y) (:red)$. Unlike *fig.2.12* we have added the guesses $f_{2Y}(y) (:lightgreen), f_{3Y}(y) (:orange), \text{ and } c = f_{4Y}(y) (:blueviolet)$.
 
 "
 
@@ -608,37 +611,37 @@ function Bishop2023_DLFig2Dot122()
 	size             = (1000, 800)
 	linewidth        = 4
 	markersize       = 14
-	#----------------------------------------------------------------------------
+	#-------------------------------------------------------------------------------
 	function negLogLikelihood(params)
 		ξ, ω, α = params
 		ω ≤ 0 && return Inf
 		dist = SkewNormal(ξ, ω, α)
 		-sum(logpdf.(dist, randomYs))
 	end # function negLogLikelihood(params)
-	#----------------------------------------------------------------------------
-	plot(title=L"Y = g(X),\ PMFs\ p_X,\ p_Y, PDFs\ f_X(x), f_Y(y), and\ Guesses f_{2Y}(y), f_{3Y}(y), f_{4Y}(y)", titlefontsize = titlefontsize, size=size, xlimits=xlimits, ylimits=ylimits, legendfontsize=legendfontsize)
-	plot!(xs, g, label=L"logistic-sigmoid\ g(X)", linewidth=linewidth, color=:blueviolet, xlabel=L"X", ylabel=L"Y\ \ (=P)")
-	annotate!(8.5, 0.82, text(L"g(X)=Logistic\ Sigmoid", annotateFontSize))
-	annotate!(2.2, 0.10, text(L"g(X)", annotateFontSize))
-	#----------------------------------------------------------------------------
+	#-------------------------------------------------------------------------------
+	plot(title=L"y = g(x),\ PMFs\ p_X,\ p_Y, PDFs\ f_X(x), f_Y(y), and\ Guesses f_{2Y}(y), f_{3Y}(y), f_{4Y}(y)", titlefontsize = titlefontsize, size=size, xlimits=xlimits, ylimits=ylimits, legendfontsize=legendfontsize)
+	plot!(xs, g, label=L"LogisticSigmoid\ g(x)", linewidth=linewidth, color=:blueviolet, xlabel=L"X", ylabel=L"Y\ \ (=P)")
+	annotate!(8.5, 0.82, text(L"g(x)=Logistic\ Sigmoid", annotateFontSize))
+	annotate!(2.2, 0.10, text(L"g(x)", annotateFontSize))
+	#-------------------------------------------------------------------------------
 	# histogram of N(x; μ_x=modeX=6.5, σ_x=1)
-	histogram!(randomXs, normalize=:true, color=:dodgerblue, label=L"p_X=N(x; μ_x=0, σ_x=1)")
+	histogram!(randomXs, normalize=:true, color=:dodgerblue, label=L"pmf\ p_X=N(X=x; μ_X=0, σ_X=1)")
 	annotate!(8.3, 0.47, text(L"pmf\ p_X=", annotateFontSize))
-	annotate!(8.5, 0.42, text(L"N(X; μ_X=modeX=6.5, σ_X=1)", annotateFontSize))
-	#----------------------------------------------------------------------------
+	annotate!(8.5, 0.42, text(L"N(X=x; μ_X=\hat x=6.5, σ_X=1)", annotateFontSize))
+	#-------------------------------------------------------------------------------
 	# histogram of N(y; μ_y≠g(modeX), σ_y≠1)
-	histogram!(randomYs, normalize=:true, permute=(:x, :y), color=:deepskyblue, label=L"p_Y=N(y; μ_Y=ξ, σ_Y=ω, shape=α)")
+	histogram!(randomYs, normalize=:true, permute=(:x, :y), color=:deepskyblue, label=L"pmf\ p_Y=N_{skewed}(Y=y; μ_Y=ξ, σ_Y=ω, shape=α)")
 	annotate!(3.7, 0.85, text(L"pmf\ p_Y", annotateFontSize))
-	#----------------------------------------------------------------------------
+	#-------------------------------------------------------------------------------
 	# mode marker line: vertical up from modeX to logistic sigmoid
 	plot!([modeX, modeX], [0.0, g(modeX)], ls=:dash, linewidth=linewidth-1, color=:blueviolet, label=false) 
 	# mode marker line: horizontal from logistic sigmoid to modeY
 	plot!([modeX, 0.0], [g(modeX), g(modeX)], ls =:dash, linewidth=linewidth-1, color=:orange, label=false)  
-	#----------------------------------------------------------------------------
+	#-------------------------------------------------------------------------------
 	# mode markers
-	plot!([modeX], [0.0], marker=:diamond, color=:red, markersize=10, label=L"mode(X)=6.5")                                                # mode(X)
-	plot!([0.0], [g(modeX)], marker=:diamond, color=:orange, markersize=10, label=L"biased\ g(mode(X))=g(\hat X)=0.82")                          # g(mode(X))
-	#---------------------------------------------------------------------------
+	plot!([modeX], [0.0], marker=:diamond, color=:red, markersize=10, label=L"mode(X) = \hat x = 6.5")                                  # mode(X)
+	plot!([0.0], [g(modeX)], marker=:diamond, color=:orange, markersize=10, label=L"erroneous\ \hat y = g(\hat x)=0.82")              # mode(Y)=g(mode(X))
+	#-------------------------------------------------------------------------------
 	# PDFs
 	gaussNX     = Normal(modeX, 1)                   # standard Gaussian N(x;0,1)
 	σY          = std(randomYs)
@@ -646,13 +649,14 @@ function Bishop2023_DLFig2Dot122()
 	gaussNY     = Normal(modeY, σY)
 	pdfsGaussNX = pdf.(gaussNX, xs)                  # densities of Gaussian X
 	pdfsGaussNY = pdf.(gaussNY, ys) 
-	plot!(xs, pdf.(gaussNX, xs), label=L"f_X(x)=N(X;μ_X=modeX, σ_X=1)", color=:red, linewidth=linewidth+1)
+	plot!(xs, pdf.(gaussNX, xs), label=L"f_X(x)=N(X=x;μ_X=\hat x, σ_X=1)", color=:red, linewidth=linewidth+1)
 	annotate!(8.1, 0.24, text(L"f_X(x)", annotateFontSize))
-	#---------------------------------------------------------------------------
+	#-------------------------------------------------------------------------------
 	# 2nd tentative PDF f_{2Y}(y)
-	plot!(pdfsGaussNY, ys, label=L"f_{2Y}=N(g(modeX), σ_Y=g(σ_X))", color=:lightgreen, linewidth=linewidth)
+	plot!(pdfsGaussNY, ys, label=L"f_{2Y}=N(Y=y, g(\hat x), σ_Y=g(σ_X))", 
+		  color=:lightgreen, linewidth=linewidth)
 	annotate!(2.4, 0.68, text(L"f_{2Y}(y)", annotateFontSize))
-	#---------------------------------------------------------------------------
+	#-------------------------------------------------------------------------------
 	# 3rd tentative PDF f_{3Y}(y)
 	x0 = [mean(randomYs), std(randomYs), 0.0]        # initial values for Nelder
 	result = optimize(negLogLikelihood, x0, NelderMead())
@@ -662,11 +666,11 @@ function Bishop2023_DLFig2Dot122()
 	println("α (shape)    = ", α)
 	plot!(ys, pdf.(SkewNormal(ξ, ω, α), ys), permute =(:x, :y), color=:orange, linewidth=linewidth, label=L"f_{3Y}=SkewNormal(ξ, ω, α)")
 	annotate!(2.3, 1.01, text(L"f_{3Y}(y)", annotateFontSize))
-	#--------------------------------------------------------------------------
+	#-------------------------------------------------------------------------------
 	# 4th tentative PDF f_{4Y}(y)
-	plot!(ys, fX_gInv(ys), permute=(:y, :x), color=:blueviolet, linewidth=linewidth-1, label=L"c = f_{4Y}(Y)")
+	plot!(ys, fX_gInv(ys), permute=(:y, :x), color=:blueviolet, linewidth=linewidth-1, label=L"c = f_{4Y}(y)")
 	annotate!(0.6, 1.03, text(L"f_{4Y}(y)", annotateFontSize))
-	#--------------------------------------------------------------------------
+	#-------------------------------------------------------------------------------
 	# correct transformed density f_Y(y)
 	plot!(ys, fY(ys), permute=(:y, :x), 
 	color=:red, linewidth=linewidth+1, label=L"f_Y(y)")
@@ -701,11 +705,13 @@ end # let
 # ╔═╡ e56da698-1ec4-4df4-9781-b6b83e1c97d6
 md"
 ---
-###### 3.11 The *Transformation-free* Computation of $mode(Y) = \hat Y$
+###### 3.11 The *Transformation-free* Computation of $mode(Y) = \hat y$
 
-There are two *transformation-free* alternatives for the computation of $\hat Y$. For the first alternative we need only the *transformed* density $f_Y(y)$ and the $argmax(f_Y(y))$ function. The second alternative is based on its derivative $f'_Y(y)$ and by solving for the *root* of the zero-set derivative $f'_Y(y) = 0$. Both alternatives generate the correct value $mode(Y)= \hat Y = 0.91$.
+There are two *transformation-free* alternatives for the computation of $\hat y$. Both methods avoid the *direct* use of the transformation $g(.)$. Instead they examine the *shape* of the *transformed* density $f_Y(y)$. 
 
-We *cannot* regain $mode(X) = 6.5$ by *simple* transformation $g^{-1}(\hat Y) = g^{-1}(0.91) = 7.31$. This value is greater than the *true* $mode(X)$'s value $\hat X = 6.5 < g^{-1}(\hat Y) = 7.31$.
+For the first alternative we need only $f_Y(y)$ and the $argmax(f_Y(y))$ function. The second alternative is based on its *derivative* $f'_Y(y)$ and by solving for the *root* of the zero-set derivative $f'_Y(y) = 0$. Both alternatives generate the correct value $mode(Y)= \hat y = 0.91$.
+
+We *cannot* regain $\hat x = 6.5$ by simple *inverse* transformation $g^{-1}(\hat y) = g^{-1}(0.91) = 7.31$. This value is greater than the *true* $mode(X)$'s value $\hat x = 6.5 < g^{-1}(\hat y) = 7.31$.
 
 "
 
@@ -713,17 +719,18 @@ We *cannot* regain $mode(X) = 6.5$ by *simple* transformation $g^{-1}(\hat Y) = 
 md"
 The derivative $f'_Y(y)$ can be obtained either *symbolically* or *numerically*. First we determine the *derivative* $f'_Y(y)$ numerically:
 
-$f'_Y(y := fYD(y) = ForwardDiff.derivative(fY, y).$
+$f'_Y(y) := fYD(y) = ForwardDiff.derivative(fY, y).$
 "
 
 # ╔═╡ 59aa3f7b-072d-4940-b8cb-267b9c8428d0
-# numerical derivative f'_Y(y)
-fYD(y) = ForwardDiff.derivative(fY, y) 
+# function definition of numerical derivative f'_Y(y)
+fYD(y) = ForwardDiff.derivative(fY, y)    # function definition of derivative f'_Y(y)
 
 # ╔═╡ 41d04cb0-bef5-4a97-9538-b04f42fe3ee1
 md"
-Both figures below display the two *transformation-free* methods for obtaining $mode(Y) = \hat Y$. The first is computing $\hat Y = argmax(f_Y(g^{-1}(y))$ (left, below) and the second is finding the root of $f'_Y(g^{-1}(y)) = 0$ (right, below). $argmax(f_Y(g^{-1}(y))$ crosses the *zero-set* derivative $f'_Y(g^{-1}(y)) = 0$.
-Both *transformation-free* methods display $\hat Y = 0.91$.
+Both figures below display the two *transformation-free* methods for obtaining $mode(Y) = \hat y$. The first is computing $\hat y = argmax(f_Y(g^{-1}(y))$ (left, below) and the second is finding the *root* of $f'_Y(g^{-1}(y)) = 0$ (right, below). The maximum $argmax(f_Y(g^{-1}(y))$ crosses the *zero-set* derivative $f'_Y(g^{-1}(y)) = 0$ in the value $\hat y = 0.91$.
+
+Both *transformation-free* methods display the same *mode* $\hat y = 0.91$.
 
 "
 
@@ -739,21 +746,21 @@ let ys       =   0.02:Δy:0.98
 	pl1 = plot(title=L"transfomed\;\;density\ f_Y(y)", titlefontsize=titlefontsize,  color=:red, linewidth=linewidth, permute=(:x, :y),
 			   ys, fY(ys), legendfontsize=legendfontsize, label=false)
 	#
-	plot!(x2s, x -> ys[argmax(fY.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"\hat Y = ys\left[argmax(fY)\right] = 0.91")
+	plot!(x2s, x -> ys[argmax(fY.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"\hat y = ys\left[argmax(fY)\right] = 0.91")
 	#
 	println("mode(Y) = ys[argmax(fY.(ys))] = ", ys[argmax(fY.(ys))])
 	println("fY(ys[argmax(fY.(ys))])       = ", fY(ys[argmax(fY.(ys))]))
 	#
-	annotate!(1.9, 0.93, text(L"\hat Y = ys[argmax(f_Y.(ys)]       = 0.91", annotateFontSize))
+	annotate!(1.9, 0.93, text(L"\hat y = ys[argmax(f_Y.(ys)]       = 0.91", annotateFontSize))
 	#-------------------------------------------------------------------------------
 	pl2 = plot(title=L"derivative\ of\ density\ f'_Y(y)", 		    titlefontsize=titlefontsize, label=false, linewidth=linewidth,
-			   ys, fYD.(ys), legendfontsize=legendfontsize, color=:magenta, permute=(:x, :y))
+			ys, fYD.(ys), legendfontsize=legendfontsize, color=:magenta, permute=(:x, :y))
 	#
-	plot!(xs, x -> ys[argmax(fY.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"\hat Y = ys\left[argmax(fY)\right] = 0.91")
+	plot!(xs, x -> ys[argmax(fY.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"\hat y = ys\left[argmax(fY)\right] = 0.91")
 	#
 	plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linewidth=linewidth-1, linestyle=:dash, label=L"f'_Y(y) = 0")
 	#
-	annotate!(-39.5, 0.93, text(L"\hat Y = ys[argmax(f_Y.(ys)] = 0.91", annotateFontSize))
+	annotate!(-43.0, 0.93, text(L"\hat y = ys[argmax(f_Y.(ys)] = 0.91", annotateFontSize))
 	# ==> 0 --> :)
 	println("fYD(ys[argmax(fY.(ys))])      = ", fYD(ys[argmax(fY.(ys))]))            
 	println("gInv(ys[argmax(fY.(ys))])     = ", gInv(ys[argmax(fY.(ys))])) 
@@ -771,10 +778,10 @@ gInv(0.91) > modeX                     # g^{-1}(mode(Y)) = 7.31 > mode(X) = 6.5
 # ╔═╡ 81c9024f-1f92-4275-96df-d81fd6dea240
 md"
 ---
-###### 3.12 Projection of *PDF* $f_Y(y)$ and $mode(Y)= \hat Y$ into *PMF* (=Histogram) Space
-In 3.10 we documented two numerical methods to obtain the correct $mode(Y)= \hat Y$. For the *first* we only need the *PDF* $f_Y(y)$ and for the *second* its *derivative* $f'_Y(y)$ and a *root finding* method to solve $f'_Y(y) = 0$.
+###### 3.12 Projection of *PDF* $f_Y(y)$ and $mode(Y)= \hat y$ into *PMF* (=Histogram) Space
+In 3.11 we documented two numerical methods to obtain the correct $mode(Y)= \hat y$. For the *first* we only need the *PDF* $f_Y(y)$ and for the *second* its *derivative* $f'_Y(y)$ and a *root finding* method to solve $f'_Y(y) = 0$.
 
-Now we are able to project $mode(Y)= \hat Y$ into *PMF* (= histogram) space (see below).
+Now we are able to project *mode* $\hat y$ into *PMF* (= histogram) space (see below). We see that both *transformation-free* methods compute the *true* value of *mode* $\hat y = 0.91.$
 "
 
 # ╔═╡ 405b87a5-0ab0-42ed-aef7-15b35f822d94
@@ -786,53 +793,53 @@ function Bishop2023_DLFig2Dot123()
 	#------------------------------------
 	titlefontsize    = 17
 	xlimits          = (0.0, 10.5)
-	ylimits          = (-0.001, 1.55)
+	ylimits          = (-0.001, 1.6)
 	guidefontsize    = 18
 	legendfontsize   = 9
 	annotateFontSize = 15
-	size             = (1000, 800)
+	size             = (1000, 850)
 	linewidth        = 4
 	markersize       = 14
-	#----------------------------------------------------------------------------
+	#-------------------------------------------------------------------------------
 	function negLogLikelihood(params)
 		ξ, ω, α = params
 		ω ≤ 0 && return Inf
 		dist = SkewNormal(ξ, ω, α)
 		-sum(logpdf.(dist, randomYs))
 	end # function negLogLikelihood(params)
-	#----------------------------------------------------------------------------
-	plot(title=L"Y = g(X), density\ f_Y(y), and\ mode(Y) = \hat Y", titlefontsize = titlefontsize, legendfontsize=legendfontsize, size=size, xlimits=xlimits, ylimits=ylimits)
-	plot!(xs, g, label=L"logistic-sigmoid\ g(X)", linewidth=linewidth, color=:blueviolet, xlabel=L"X", ylabel=L"Y\ \ (=P)")
-	annotate!(8.5, 0.82, text(L"g(X)=Logistic\ Sigmoid", annotateFontSize))
-	annotate!(2.2, 0.10, text(L"g(X)", annotateFontSize))
-	#----------------------------------------------------------------------------
+	#-------------------------------------------------------------------------------
+	plot(title=L"y = g(x), density\ f_Y(y), and\ mode(Y) = \hat y", titlefontsize = titlefontsize, legendfontsize=legendfontsize, size=size, xlimits=xlimits, ylimits=ylimits)
+	plot!(xs, g, label=L"LogisticSigmoid\ g(x)", linewidth=linewidth, color=:blueviolet, xlabel=L"X", ylabel=L"Y\ \ (=P)")
+	annotate!(8.5, 0.82, text(L"g(x)=Logistic\ Sigmoid", annotateFontSize))
+	annotate!(2.2, 0.10, text(L"g(x)", annotateFontSize))
+	#-------------------------------------------------------------------------------
 	# histogram of N(x; μ_x=modeX=6.5, σ_x=1)
-	histogram!(randomXs, normalize=:true, color=:dodgerblue, label=L"N(x; μ_x=0, σ_x=1)")
+	histogram!(randomXs, normalize=:true, color=:dodgerblue, label=L"pmf\ p_X = N(X=x; μ_x=0, σ_x=1)")
 	annotate!(8.3, 0.47, text(L"pmf\ p_X=", annotateFontSize))
-	annotate!(8.5, 0.42, text(L"N(X; μ_X=modeX=6.5, σ_X=1)", annotateFontSize))
-	#----------------------------------------------------------------------------
+	annotate!(8.5, 0.42, text(L"N(X=x; μ_X=\hat x=6.5, σ_X=1)", annotateFontSize))
+	#-------------------------------------------------------------------------------
 	# histogram of N(y; μ_y≠g(modeX), σ_y≠1)
-	histogram!(randomYs, normalize=:true, permute=(:x, :y), color=:deepskyblue, label=L"N(y; μ_Y=ξ, σ_Y=ω, shape=α)")
+	histogram!(randomYs, normalize=:true, permute=(:x, :y), color=:deepskyblue, label=L"pmf\ p_Y = N(Y=y; μ_Y=ξ, σ_Y=ω, shape=α)")
 	# annotate!(3.9, 0.85, text(L"pmf\ p_Y", annotateFontSize))
-	#----------------------------------------------------------------------------
+	#-------------------------------------------------------------------------------
 	# mode marker line: vertical up from modeX to logistic sigmoid
 	plot!([modeX, modeX], [0.0, ys[argmax(fY.(ys))]], ls=:dash, linewidth=linewidth-1
 		  , color=:blueviolet, label=false) 
 	# mode marker line: horizontal from logistic sigmoid to g(mode(X))
-	plot!([modeX, 0.0], [g(modeX), g(modeX)], ls =:dash, linewidth=linewidth-1, color=:orange, label=label=L"g(\hat X) = g(mode(X) = 0.82")  
-	annotate!(4.9, 0.85, text(L"g(\hat X) = g(mode(X)) = 0.82", annotateFontSize))
-	#----------------------------------------------------------------------------
+	plot!([modeX, 0.0], [g(modeX), g(modeX)], ls =:dash, linewidth=linewidth-1, color=:orange, label=L"erroneous\ g(\hat x) = g(mode(X) = 0.82")  
+	annotate!(4.9, 0.85, text(L"g(\hat x) = g(mode(X)) = 0.82", annotateFontSize))
+	#-------------------------------------------------------------------------------
 	# new marker line:
-	plot!([0.0, modeX], [ys[argmax(fY.(ys))], ys[argmax(fY.(ys))]], linewidth=linewidth-1.5, ls=:dash, color=:orangered2, label=L"mode(Y) = \hat Y = argmax(fY.(ys)) = 0.91")
+	plot!([0.0, modeX], [ys[argmax(fY.(ys))], ys[argmax(fY.(ys))]], linewidth=linewidth-1.5, ls=:dash, color=:orangered2, label=L"mode(Y) = \hat y = argmax(fY.(ys)) = 0.91")
 	println("mode(Y)      = argmax(fY.(ys)) = ", ys[argmax(fY.(ys))])
 	println("fY(mode(Y))  = fY(ys[argmax(fY.(ys))]) = ", fY(ys[argmax(fY.(ys))]))
-	annotate!(5.2, 0.94, text(L"\hat Y = mode(Y) = 0.91", annotateFontSize))
-	#----------------------------------------------------------------------------
+	annotate!(5.2, 0.94, text(L"\hat y = mode(Y) = 0.91", annotateFontSize))
+	#-------------------------------------------------------------------------------
 	# mode markers
 	plot!([modeX], [0.0], marker=:diamond, color=:red, markersize=markersize, label=L"mode(X)=6.5")                                                  # modeX 
-	plot!([0.0], [g(modeX)], marker=:diamond, color=:orange, markersize=markersize, label=L"biased\ g(mode(X))=0.82") 
-	plot!([0.0], [ys[argmax(fY.(ys))]], marker=:diamond, color=:orangered2, markersize=markersize, label=L"mode(Y)=0.91")  
-	#---------------------------------------------------------------------------
+	plot!([0.0], [g(modeX)], marker=:diamond, color=:orange, markersize=markersize, label=L"erroneous\ mode(Y) = g(\hat x) = 0.82") 
+	plot!([0.0], [ys[argmax(fY.(ys))]], marker=:diamond, color=:orangered2, markersize=markersize, label=L"true\ mode(Y) = \hat y = 0.91")  
+	#-------------------------------------------------------------------------------
 	# PDFs
 	gaussNX     = Normal(modeX, 1)                   # standard Gaussian N(x;0,1)
 	σY          = std(randomYs)
@@ -840,13 +847,14 @@ function Bishop2023_DLFig2Dot123()
 	gaussNY     = Normal(modeY, σY)
 	pdfsGaussNX = pdf.(gaussNX, xs)                  # densities of Gaussian X
 	pdfsGaussNY = pdf.(gaussNY, ys) 
-	plot!(xs, pdf.(gaussNX, xs), label=L"f_X(x)=N(X;μ_X=modeX, σ_X=1)", color=:red, linewidth=linewidth+1)
+	plot!(xs, pdf.(gaussNX, xs), label=L"f_X(x)=N(X=x;μ_X=\hat x, σ_X=1)", color=:red, linewidth=linewidth+1)
 	annotate!(8.1, 0.24, text(L"f_X(x)", annotateFontSize))
-	#---------------------------------------------------------------------------
+	#-------------------------------------------------------------------------------
 	# 2nd tentative PDF f_{2Y}(y)
-	plot!(pdfsGaussNY, ys, label=L"f_{2Y}=N(g(modeX), σ_Y=g(σ_X))", color=:lightgreen, linewidth=linewidth)
+	plot!(pdfsGaussNY, ys, label=L"f_{2Y}=N(Y=y, g(\hat x), σ_Y=g(σ_X))",
+		  color=:lightgreen, linewidth=linewidth)
 	annotate!(2.4, 0.68, text(L"f_{2Y}(y)", annotateFontSize))
-	#---------------------------------------------------------------------------
+	#-------------------------------------------------------------------------------
 	# 3rd tentative PDF f_{3Y}(y)
 	x0 = [mean(randomYs), std(randomYs), 0.0]        # initial values for Nelder
 	result = optimize(negLogLikelihood, x0, NelderMead())
@@ -854,7 +862,7 @@ function Bishop2023_DLFig2Dot123()
 	println("ξ (location) = ", ξ)
 	println("ω (scale)    = ", ω)
 	println("α (shape)    = ", α)
-	plot!(ys, pdf.(SkewNormal(ξ, ω, α), ys), permute =(:x, :y), color=:orange, lw=4, label=L"f_{3Y}=SkewNormal(ξ, ω, α)")
+	plot!(ys, pdf.(SkewNormal(ξ, ω, α), ys), permute =(:x, :y), color=:orange, lw=4, label=L"f_{3Y}=SkewNormal(\hat ξ, \hat ω, \hat α)")
 	annotate!(2.3, 1.01, text(L"f_{3Y}(y)", annotateFontSize))
 	#--------------------------------------------------------------------------
 	# 4th tentative PDF f_{4Y}(y)
@@ -874,17 +882,17 @@ Bishop2023_DLFig2Dot123()
 md"
 ---
 ###### 3.13 The Symbolic Derivative of $\frac{d}{dy}f_Y(y) =f'_Y(y)$
-In 3.1 (DLFC, (2.72)) we argued that *simple* transformations according to $\hat Y = g(\hat X), \hat X = g^{-1}(\hat Y)$ could only be made if $f_X(x), f_Y(y)$ were *differentiable, unconstrained* functions. This is *not* true for *densities*. These are constrained to *nonnegative* values and $\int f(x) dx = 1$.
+In 3.1 (cf. DLFC, (2.72)) we argued that *simple* transformations $\hat y = g(\hat x), \hat x = g^{-1}(\hat y)$ are correct only if $f_X(x), f_Y(y)$ were *differentiable, unconstrained* functions. This is *not* true for *densities*. These are constrained to *nonnegative* values (= *1st* constraint) and $\int f(x) dx = 1$ (= *2nd* constraint).
 
-Instead we derived $mode(Y) = \hat Y$ *transformation-free* either by computation of $argmax(f_Y(y))$ or by solving for the root of the *zero-set* derivative $f'_Y(y) = 0$. In both cases we used numeric algorithms and got the value $mode(Y) = 0.91$.
+Instead we derived for the computation of *mode* $\hat Y$ *transformation-free* alternatives either by appliction of $argmax(f_Y(y))$ or by solving for the *root* of the *zero-set* derivative $f'_Y(y) = 0$. In both cases we used numerical algorithms and got the correct value for *mode* $\hat y = 0.91$.
 
-Bishop & Bishop (2024, p. 43) prefer to present the *correction factor* (= *Jacobian*) in the transformation $(DLFC, (2.71))$ symbolically. We try to elaborate their ideas as far as possible in *Julia* graphics.
+Bishop & Bishop (2024, p. 43) prefer to present the *correction factor* (= *Jacobian*) in the transformation $(DLFC, (2.71))$ *symbolically*. We try to elaborate their ideas as far as possible within *Julia* graphics.
 
 We start with the transform of the density $f_X(x)$ in 3.1:
 
 $f_Y(y) = f_X(g^{-1}(y))\left|(g^{-1})'(y)\right|\tag{cf. DLFC, (2.71)}.$
 
-Then we have to calculate the *derivative* $f'_Y(y)$:
+Then we determine the *derivative* $f'_Y(y)$:
 
 $f'_Y(y) = \frac{d}{dy}(f_X(g^{-1}(y))|(g^{-1})'(y)|)=$
 
@@ -892,15 +900,15 @@ $=\frac{(g^{-1})'(y)\left(((g^{-1})'(y))^2f_X'((g^{-1})(y)) + f_X((g^{-1})(y))(g
 
 $=\frac{(g^{-1})'(y)}{|(g^{-1})'(y)|}\cdot\left(((g^{-1})'(y))^2 \cdot f_X'((g^{-1})(y)) + f_X((g^{-1})(y)) \cdot (g^{-1})''(y)\right).$
 
-If we abbreviate
+We abbreviate
 
-$s(y) = \frac{(g^{-1})'(y)}{|(g^{-1})'(y)|}$
+$s(y) = \frac{(g^{-1})'(y)}{|(g^{-1})'(y)|}.$
 
-and for our case
+This is for our case
 
-$\forall y \in [0, 1]:s(y) = 1$
+$\forall y \in [0, 1]:s(y) = 1.$
 
-the *derivative* simplifies to
+The *derivative* simplifies to
 
 $f'_Y(y) = ((g^{-1})'(y))^2f_X'((g^{-1})(y)) + f_X((g^{-1})(y))(g^{-1})''(y).$
 
@@ -909,7 +917,7 @@ If we reorder terms within brackets
 $f'_Y(y) = \tag{cf. DLFC, (2.73)}$
 $= f_X'((g^{-1})(y)) \cdot ((g^{-1})'(y))^2 + f_X((g^{-1})(y))\cdot (g^{-1})''(y),$
 
-this expression is apart from minor differences in spelling virtually identical to (*DLFC, (2.73)*).
+this expression is apart from minor differences in spelling virtually identical to *Bishop & Bishop*'s (*DLFC, (2.73)*).
 
 "
 
@@ -920,27 +928,47 @@ md"
 
 For bookkeeping purposes we denote the various factors of $f'_Y(y)$ with letters $a...d$. The correctness of the *symbolic* derivatives were crosschecked with [*Wolfram Alpha*](https://www.wolframalpha.com/).
 
-$f'_Y(y) = f_X'((g^{-1})(y)) \cdot ((g^{-1})'(y))^2 + f_X((g^{-1})(y))\cdot (g^{-1})''(y)=$
+$f'_Y(y) = \tag{cf. DLFC, (2.73)}$
+$= f_X'((g^{-1})(y)) \cdot ((g^{-1})'(y))^2 + f_X((g^{-1})(y))\cdot (g^{-1})''(y)=$
 $= a\cdot b^2 + c \cdot d.$
 
 where:
 
 $a=f'_X((g^{-1})(y)) := fXD\_gInv(y),$
-$b_1=(g^{-1})'(y)    := gInvD\_Symb(y) = \frac{1}{y - y^2},$
-$b_2=(g^{-1})'(y)    := gInvD\_Num(y),$
+
+$b = \begin{cases}
+b_1=(g^{-1})'(y)    := gInvD\_Symb(y) = \frac{1}{y - y^2},  & \text{if symbolic} \\
+b_2=(g^{-1})'(y)    := gInvD\_Num(y), & \text{if numeric}
+\end{cases}$
+
 $c=f_X((g^{-1})(y))  := fX\_gInv(y)$
-$d_1=(g^{-1})''(y)   := gInvDD\_Symb(y) = \frac{2y-1}{(y-1)^2y^2}$
-$d_2=(g^{-1})''(y)   := gInvDD\_Num(y).$
 
-For the two *modes* $\hat X, \hat Y$ both *derivatives* $f'_Y(\hat Y) = f_X'((g^{-1})(\hat Y)) = 0$ have to be *zero*. But this could only be true when $\hat X = g^{-1}(\hat Y)$ and when the product $cd = f_X((g^{-1})(y))\cdot (g^{-1})''(y)$ is *zero*, too. The *transformational* assumption was excluded above. But for $\hat X$ the derivative $f_X'((g^{-1})(\hat Y))$ is zero when at the same time $f_X((g^{-1})(y)) = max !$.  
-This makes things complicated so that cannot get $\hat Y = g(\hat X)$ by simple application of $g(.)$.
+$d = \begin{cases}
+d_1=(g^{-1})''(y)   := gInvDD\_Symb(y) = \frac{2y-1}{(y-1)^2y^2},  & \text{if symbolic} \\
+d_2=(g^{-1})''(y)   := gInvDD\_Num(y). & \text{if numeric}
+\end{cases}$
 
+It had be shown that
+
+$\hat y ≠ g(\hat x)\text{ and } \hat x ≠ g^{-1}(\hat y).$ 
+
+For the two *modes* $\hat x, \hat y$ both *derivatives* $f'_Y(\hat y) = f_X'(\hat x) = 0$ have to be *zero*. Under this assumption the relation between the derivatives is similar
+
+$f'_Y(\hat y) ≠ f'_X(g(\hat x)) \neq 0 \text{ and } f'_X(\hat x) ≠ f'_Y(g^{-1}(\hat y)) \neq 0.$ 
+
+The simple $f'_X(g(\hat x)) - 0$ or the weighted *deviation* $f'_X(g(\hat x)) \cdot ((g^{-1})'(y))^2 - 0$ is controlled or corrected by the second summand $c \cdot d$ in $f'_Y(y).$
+
+"
+
+# ╔═╡ b421e33b-3692-4d12-b2ce-c65c0e2a57c3
+md"
+---
+###### 2026/06/22
 "
 
 # ╔═╡ 41b1196e-9f0a-4398-b5af-f442c0be2715
 begin 
 	#--------------------------------------------------------------------------------
-	# derivative f'_X(y) = f'_X(g^{-1}(y))
 	fXD_gInv(y)    = ForwardDiff.derivative(fX_gInv, y)   # a) numeric derivative
 	#--------------------------------------------------------------------------------
 	gInvD_Symb(y)  = 1.0/(y - y^2)                        # b1 = symbol. (g^{-1})'(y)
@@ -954,11 +982,12 @@ end # begin
 # ╔═╡ e60fb090-ea7b-4f27-8bb3-e4d9704f09d3
 md"
 ---
-###### 3.15 Intermediate Plotting Results: Transformed *Density* $f_Y(g^{-1}(y))$ (*pl1*), its *Derivative* $f'_Y(g^{-1}(y))$ (*pl2*), and others (*pl3-pl8*)
-Here we plot $f'_Y(g^{-1}(y))$ and some of its components:
+###### 3.15 Intermediate Plotting Results: Transformed *Density* $f_Y(y)$ (*pl1*), its *Derivative* $f'_Y(y)$ (*pl2*), and others (*pl3-pl8*)
+
+Here we plot $f'_Y(y)$ and some of its components:
 
 - *pl1*: density $f_Y(y)$
-- *pl2*: derivative of density $f'_Y(y)$
+- *pl2*: derivative $f'_Y(y)$ of density $f_Y(y)$
 - *pl3*: logit transform $g^{-1}(y)$ or $|g^{-1}(y)|$
 - *pl4*: $\frac{g^{-1}(y)}{|g^{-1}(y)|}=1$
 - *pl5*: derivative $b = (g^{-1})'(y)$
@@ -966,7 +995,7 @@ Here we plot $f'_Y(g^{-1}(y))$ and some of its components:
 - *pl7*: second order derivative $d = (g^{-1})''(y)$
 - *pl8*: density $c=f_X(g^{-1}(y))$, derivative $a=f'_X(g^{-1}(y))$
 
-For $f'_Y(g^{-1}(y))$ the following components are *necessary* 
+For $f'_Y(y)$ the following components are *necessary* 
 
 - term $a$ in *pl8*
 - term $b^2$ in *pl6*
@@ -996,25 +1025,25 @@ function derivatives()
 	# derivative f'_Y(y) = f'_Y(g^{-1}(y)
 	fYD(y)          = ForwardDiff.derivative(fY, y)     # numeric derivative
 	#--------------------------------------------------------------------------------
-	s(y)            = gInv_SymbD(y)/abs(gInv_SymbD(y))
+	s(y)            = gInvD_Symb(y)/abs(gInvD_Symb(y))  # *** where used ??? ***
 	#-----------------------------------------------------------------------------
 	pl1 = plot(title=L"pl1:\ density\ f_Y(y)", titlefontsize=titlefontsize,  permute=(:x, :y), linewidth=linewidth+1, legendfontsize=legendfontsize,
 	ylimits=(-1.0, 4.0),
 	ys, fY(ys), color=:red, label=L"density\ f_Y(y)")
 	#
-	plot!(x2s, x -> ys[argmax(fY.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"\hat Y = argmax(fY(ys)) = 0.91")
+	plot!(x2s, x -> ys[argmax(fY.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"mode\ \hat Y = argmax(fY(ys)) = 0.91")
 	#
-	annotate!(1.9, 0.93, text(L"\hat Y = ys[argmax(fY.(ys))] = 0.91", annotateFontSize))
+	annotate!(1.9, 0.93, text(L"mode\ \hat Y = ys[argmax(fY.(ys))] = 0.91", annotateFontSize))
 	#-----------------------------------------------------------------------------
-	pl2 = plot(title=L"pl2:\ deriv.\ of\ density\ f'_Y(y)", 
+	pl2 = plot(title=L"pl2:\ derivative\ f'_Y(y)\ of\ density\ f_Y(y)", 
 			   ys, fYD.(ys), permute=(:x, :y), color=:magenta,
-			   titlefontsize=titlefontsize, legendfontsize=legendfontsize, linewidth=linewidth, label=L"derivative\ f_Y'(y)")
+			   titlefontsize=titlefontsize, legendfontsize=legendfontsize, linewidth=linewidth, label=L"derivative\ f'_Y(y)")
 	#
-	plot!(xs, x -> ys[argmax(fY.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"\hat Y = argmax(fY) = 0.91")
+	plot!(xs, x -> ys[argmax(fY.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"mode\ \hat Y = argmax(fY) = 0.91")
 	#
 	plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linewidth=linewidth-1, linestyle=:dash, label=L"f'_Y(y)=0")
 	#
-	annotate!(-40, 0.93, text(L"\hat Y = ys[argmax(fY.(ys)] = 0.91", annotateFontSize))
+	annotate!(-40, 0.93, text(L"mode\ \hat Y = ys[argmax(fY.(ys)] = 0.91", annotateFontSize))
 	#-----------------------------------------------------------------------------
 	pl3 = 
 		plot(ys, gInv.(ys), title=L"pl3: g^{-1}(y) = logit\ transformation\ of\ Y", titlefontsize=titlefontsize, legendfontsize=legendfontsize, color=:orange, permute=(:x, :y), linewidth=linewidth+2, label=L"pl3_1: g^{-1}(y) = logit\ transformation\ of\ Y")
@@ -1243,7 +1272,7 @@ md"
 - **Bishop, Ch.M.**; [*Pattern Recognition and Machine Learning*](https://www.microsoft.com/en-us/research/wp-content/uploads/2006/01/Bishop-Pattern-Recognition-and-Machine-Learning-2006.pdf), Springer, 2006
 - **Bishop, Ch.M. & Bishop, H.**; [*Deep Learning: Foundations and Concepts*](https://www.bishopbook.com/), [*DLFC*, freeonline](https://issuu.com/cmb321/docs/deep_learning_ebook), Cham, Switzerland: Springer, 2024
 - **Deng, J.D.**; [*Getting Started with Julia*](https://juliahub.com/ui/Notebooks/jddeng/MLwithJulia-demos/ch1-JuliaNotes.jl); last visit 2026/04/26
-- **Murphy, K.P.**; [*Probabilistic Machine Learning: Advanced Topics*](https://github.com/probml/pml2-book/releases/latest/download/book2.pdf), Massachuchetts, USA: MIT Press, 2023; last visit 2026/05/07
+- **Murphy, K.P.**; [*Probabilistic Machine Learning: Advanced Topics*](https://github.com/probml/pml2-book/releases/latest/download/book2.pdf), Massachusetts, USA: MIT Press, 2023; last visit 2026/05/07
 - **Wikipedia**; [*Change of Variables*](https://en.wikipedia.org/wiki/Change_of_variables); last visit 2026/05/26
 - **Wikipedia**; [*Probability Density Function*](https://en.wikipedia.org/wiki/Probability_density_function); last visit 2026/05/10
 - **Wikipedia**; [*Logistic* function](https://en.wikipedia.org/wiki/Logistic_function); last visit 2026/05/31
@@ -3160,7 +3189,7 @@ version = "1.13.0+0"
 # ╟─1659e07b-966b-4514-8769-44f10af6597d
 # ╟─20a531ef-73a8-4c81-b349-7ffc4793ca92
 # ╟─22f653bd-3f02-4f1d-825b-11ef663db9bf
-# ╟─190d06f0-79c5-492d-b523-dd67b619aead
+# ╠═190d06f0-79c5-492d-b523-dd67b619aead
 # ╟─f888453b-7732-46c1-aa1e-d09ce4f49b50
 # ╟─7c5230e6-b634-4f83-b9b6-3d68c09b18a0
 # ╟─afb33701-ae29-4cc5-90aa-f5070a4480a6
@@ -3171,7 +3200,6 @@ version = "1.13.0+0"
 # ╠═9db11048-f743-4fd6-9374-d920df3e6398
 # ╠═a679883f-c97c-41f4-8333-41b0b998099b
 # ╟─be819c32-d007-4547-91b0-8b1a29f6752f
-# ╠═b421e33b-3692-4d12-b2ce-c65c0e2a57c3
 # ╟─ab462070-74e3-4f16-b1e3-d119418ee376
 # ╟─c1bd9c0c-5422-421c-892c-a581d778ad82
 # ╟─45d605af-274b-48ac-82a3-0124714d760d
@@ -3189,6 +3217,7 @@ version = "1.13.0+0"
 # ╟─4c522ae1-16a7-463c-8366-427fb299af69
 # ╟─e991a48d-5d63-4891-99bb-51d29cfd03e6
 # ╠═41b1196e-9f0a-4398-b5af-f442c0be2715
+# ╠═b421e33b-3692-4d12-b2ce-c65c0e2a57c3
 # ╟─e60fb090-ea7b-4f27-8bb3-e4d9704f09d3
 # ╟─d9b644a4-c59e-40e7-beb3-d7aedf5c2a1e
 # ╟─a2aa8846-e540-4403-9da9-ad12b0622859
@@ -3200,7 +3229,7 @@ version = "1.13.0+0"
 # ╠═6be4a020-234c-4600-a7fa-84ed6504718a
 # ╠═f9053506-b821-41d8-82a1-fc71a01b6d45
 # ╟─2201195a-bc2d-4286-a580-81154bf64e87
-# ╠═a053117f-f2ff-49c0-9c7e-6f465a8e5bfb
+# ╟─a053117f-f2ff-49c0-9c7e-6f465a8e5bfb
 # ╠═fd53d5cb-e000-4144-9cb1-696aa962659c
 # ╟─4f24698d-3d7e-4656-b6bc-b566fdce7a69
 # ╟─cc6463bb-7878-4c4c-9fef-553ee17868ad
