@@ -36,7 +36,7 @@ md"
 ====================================================================================
 #### MLD_DLFC, ch.02.4 Transformation Of Densities
 ##### file: PCM20260430\_MLD\_DLFC\_02.4\_TransformationOfDensities
-##### Julia/Pluto.jl: 1.12.6/0.20.4 by PCM *** 2026/06/30 ***
+##### Julia/Pluto.jl: 1.12.6/0.20.4 by PCM *** 2026/07/01 ***
 ====================================================================================
 "
 
@@ -47,11 +47,11 @@ md"
 
 This is my *MLD (= My Learning Diary)* for working through various *resources* (see *references*). *MLD* means that I work through the *resource* and, in this process, *experiment* with *my own* interpretations, adaptations, and improvements by *coding* in *Julia*.
 
-Now, we are looking at *how a probability density* and a function of that density (e.g. the *mode*) changes under a *nonlinear* transformation ([*Bishop & Bishop, DLFC*, 2024, Ch. 2.4, p. 42ff](https://www.bishopbook.com/)). 
+Now, we are looking at *how a probability density* and a *function* of that density (e.g. the *mode*) changes under a *nonlinear* transformation ([*Bishop & Bishop, DLFC*, 2024, Ch. 2.4, p. 42ff](https://www.bishopbook.com/)). 
 
-*If the [probability density function (= pdf)](https://en.wikipedia.org/wiki/Probability_density_function) of a random variable (or a vector) $X$ is given as $f_X(x)$, it is possible ... to compute the probability density function of a variable $Y = g(X)$. This is also refered to as 'variable substitution' and is used in practice to generate a random variable of arbitrary form $f_{g(X)}(y) = f_Y(y)$ using a known (e.g., uniformly distributed) random number generator.*
+*If the [probability density function (= pdf)](https://en.wikipedia.org/wiki/Probability_density_function) of a random variable (or a vector) $X$ is given as $f_X(x)$, it is possible ... to compute the pdf of a variable $Y = g(X)$. This is also referred to as 'variable substitution' and is used in practice to generate a random variable of arbitrary form $f_Y(y) = f_{g(X)}(y)$ using a known (e.g., uniformly distributed) random number generator.*
 
-In Bishop ([*PRML, 2006*, p.58](https://www.microsoft.com/en-us/research/wp-content/uploads/2006/01/Bishop-Pattern-Recognition-and-Machine-Learning-2006.pdf); notation slightly adapted to our spelling) we find exercise $_\text{**}1.4$: *Consider a probability density $f_X(x)$ defined over a continuous variable $X$, and suppose that we make a nonlinear change of variable using $X = g^{-1}(Y)$, so that the density transforms according to $(1.27):f_Y(y)=f_X(g^{-1}(y)\cdot|(g^{-1})'(y)|$. By differentiating $(1.27)$, show that the location $\hat Y$ of the maximum of the density in $Y$ is not in general related to the location $\hat X$ of the maximum of the density over $X$ by the simple functional relation $\hat X = g^{-1}(\hat Y)$ as a consequence of the Jacobian factor. This shows that the maximum of a probability density (in contrast to a simple function) is dependent on the choice of variable.*
+In Bishop ([*PRML, 2006*, p.58](https://www.microsoft.com/en-us/research/wp-content/uploads/2006/01/Bishop-Pattern-Recognition-and-Machine-Learning-2006.pdf); notation slightly adapted to our spelling) we find exercise $_\text{**}1.4$: *Consider a probability density $f_X(x)$ defined over a continuous variable $X$, and suppose that we make a nonlinear change of variable using $X = g^{-1}(Y)$, so that the density transforms according to $(1.27):f_Y(y)=f_X(g^{-1}(y)\cdot|(g^{-1})'(y)|$. By differentiating $(1.27)$, show that the location $\hat y$ of the maximum of the density in $Y$ is not in general related to the location $\hat x$ of the maximum of the density over $X$ by the simple functional relation $\hat x = g^{-1}(\hat y)$ as a consequence of the Jacobian factor. This shows that the maximum of a probability density (in contrast to a simple function) is dependent on the choice of variable.*
 
 Here we try to sketch a solution to [*Bishop's exercise 1.4*](https://www.microsoft.com/en-us/research/wp-content/uploads/2006/01/Bishop-Pattern-Recognition-and-Machine-Learning-2006.pdf) in *Julia*.
 
@@ -79,25 +79,22 @@ md"---
 ##### 3. Code
 ###### 3.1 [*Change of Variables*](https://en.wikipedia.org/wiki/Change_of_variables)
 
-In mathematics, a [*change of variables*](https://en.wikipedia.org/wiki/Change_of_variables) is a basic technique used to *simplify* problems in which the original variables are *replaced* with functions of other variables. The intent is that when expressed in *new* variables, the problem may become *simpler*, or equivalent to a better understood problem. The *tags* $DLFC$ refer to *Bishop & Bishop*'s, *DLFC* (= [*Deep Learning: Foundation and Concepts*](https://www.bishopbook.com/)) though *DLFC* uses a slightly different spelling.
+In mathematics, a [*change of variables*](https://en.wikipedia.org/wiki/Change_of_variables) is a basic technique used to *simplify* problems in which the original variables are *replaced* with functions of other variables. The intent is that when expressed in *new* variables, the problem may become *simpler*, or equivalent to a better understood problem. The *tags* $DLFC$ refer to *Bishop & Bishop*'s, *DLFC* (= [*Deep Learning: Foundation and Concepts*](https://www.bishopbook.com/)), though *DLFC* uses a slightly different spelling.
 
 Suppose a single *random* variable $X$ is changed by a *monotonic, differentiable* transformation $g(.)$. 
 
 Then:
 
-$y = g(x),$     
-$x = g^{-1}(y),$  
-$x = g^{-1}(g(x))\;\text{ and }$
-
-$y = g(g^{-1}(y)).$
+$y = g(x) = g(g^{-1}(y))\;\text{, and }$     
+$x = g^{-1}(y) = g^{-1}(g(x)).$  
 
 Now a function $f(x)$ becomes a *new* function $\tilde f(y)$ defined as
 
-$\tilde f(y) = f(g^{-1}(y)) \tag{cf. DLFC, (2.70)}.$
+$\tilde f(y) := f(g^{-1}(y)) \tag{cf. DLFC, (2.70)}.$
 
 Its *derivative* is according to the *chain rule*:
 
-$\tilde f'(y) = f'(g^{-1}(y))(g^{-1})'(y)$
+$\tilde f'(y) := f'(g^{-1}(y))(g^{-1})'(y)$
 
 and for *modes* $\hat y, \hat x$ plugged into the derivative
 
@@ -107,17 +104,17 @@ This is correct, because at *modes* $\hat x, \hat y$ the following derivatives s
 
 $\tilde f'(\hat y) = 0 \;\text{ and } f'(g^{-1}(\hat y)) = 0$
 
-and the factor $(g^{-1})'(\hat y)$ should be:
+and the factor $(g^{-1})'(\hat y)$ should be
 
-$(g^{-1})'(\hat y) \neq 0.$
+$(g^{-1})'(\hat y) \neq 0,$
 
-If the functions $\tilde f, f$ would *monotonic, differentiable* but otherwise *unconstrained* functions we *could* derive *mode* $\hat y$ by simple plugging $\hat x$ into the transformation function $g(.)$:  
+if the functions $\tilde f, f$ would *monotonic, differentiable* but otherwise *unconstrained* functions. In this case we *could* derive *mode* $\hat y$ by simple plugging $\hat x$ into the transformation function $g(.)$:  
 
 $\hat y = g(\hat x).$
 
 However, this holds *only* if $f$ were an *unrestricted* function. This *does not* apply to *probability density functions* $\tilde f, f$. These are *restricted* in that they are *non-negative* (= *1st* constraint) and have an *integral* of measure 1 (= *2nd* constraint).
 
-So the *relation* between *modes* $\hat y, \hat x$ is defined by $DLFC, (2.72).$
+So the *relation* between *modes* $\hat y, \hat x$ is defined by $DLFC, (2.72)$, if the functions $\tilde f, f$ would *monotonic, differentiable* but otherwise *unconstrained* functions.
 
 "
 
@@ -191,10 +188,8 @@ md"
 
 Bishop & Bishop (2024, p. 42) use a slightly different spelling. They swap the roles of the variables, so that the following holds:
 
-$x = g(y)$
-$y = g^{-1}(x)$
-$x = g(g^{-1}(x)),$
-$y = g^{-1}(g(y)),$
+$x = g(y) = g(g^{-1}(x)),$
+$y = g^{-1}(x) = g^{-1}(g(y)).$
 $\tilde f(y) = f(g(y)).$
 
 We stick with the *first* spelling in **3.1**.
@@ -205,11 +200,11 @@ md"
 ---
 ###### 3.4 *PMF* $p_X=N(X=x;μ_X, \sigma_X)$, *Logistic Sigmoid* $g(x)$, and two Naive Guesses of *PDFs* $f_Y(y)$
 
-- Now we plot the discrete *Gaussian* probability mass function (pmf) $p_X$ as a *histogram* with $μ_X = mode(X) = \hat x =6.5$ and $σ_X=1.0$. To do this, we generated $nSamples=10^5$ *Gaussian* random numbers. 
+- Now we plot the discrete Gaussian *probability mass function* (= *pmf*) $p_X$ as a *histogram* with $μ_X = mode(X) = \hat x =6.5$ and $σ_X=1.0$. To do this, we generated $nSamples=10^5$ *Gaussian* random numbers. 
 
-- Additionally, we have plotted the *logistic sigmoid function*, which serves as the *transformation function* $g(x)$. We *tentatively* used $g(x)$ to transform $\hat x$, thereby obtaining a (wrong) expectation about $\hat y:\ \hat y = g(\hat x)$. 
+- Additionally, we have plotted the *logistic sigmoid function*, which serves as the *transformation function* $g(x)$. We *tentatively* used $g(x)$ to transform $\hat x$, thereby obtaining a (naive) expectation about $\hat y:\ \hat y = g(\hat x)$. 
 
-- Third, we have plotted *two* guesses of transformed *pdfs* $f_{1Y}(y), f_{2Y}(y)$. Both guesses assume the erroneous $\hat y = g(\hat x)$. Furthermore, the first guess ($f_{1Y}(y)$, $:green, :dash$) assumes that $σ_Y$ is a simple transform $σ_Y=g(σ_X)$. However, the plot shows that this is a rather *narrow* guess. The second estimate ($f_{2Y}(y)$, $:lightgreen$) assumes that $σ_Y=σ(g(x))$. This guess seems to be more realistic. But its correctness has to be verified by further evidence.
+- Third, we have plotted *two* guesses of transformed *pdfs* $f_{1Y}(y), f_{2Y}(y)$. Both guesses assume the naive $\hat y = g(\hat x)$. Furthermore, the first guess ($f_{1Y}(y)$, $:green, :dash$) assumes that $σ_Y$ is a simple transform $σ_Y=g(σ_X)$. However, the plot shows that this is a rather *leptokurtic* guess. The second estimate ($f_{2Y}(y)$, $:lightgreen$) assumes that $σ_Y=σ(g(x))$. This guess seems to be more realistic. But its correctness has to be verified by further evidence.
 
 "
 
@@ -246,12 +241,12 @@ function myGaussianPlot()
 	#------------------------------------------------------------------------------
 	# mode markers
 	plot!([modeX], [0.0], marker=:diamond, color=:red, markersize=markersize, label=L"mode(X) = \hat x = 6.5")                                                 
-	plot!([0.0], [g(modeX)], marker=:diamond, color=:orange, markersize=markersize, label=L"erroneous\ g(mode(X)) = g(\hat x) = 0.82")                   
+	plot!([0.0], [g(modeX)], marker=:diamond, color=:orange, markersize=markersize, label=L"naive\ g(mode(X)) = g(\hat x) = 0.82")                   
 	#------------------------------------------------------------------------------
 	# 1st tentative PDF f_Y
 	plot!(permute=(:x, :y), 
 		ys, pdf.(Normal(g(modeX), g(σXs)), ys), 
-		label=L"f_1_Y(y) = N(Y=y;g(\hat x), g(σ_X))", color=:green, linewidth=linewidth-2,  	linestyle=:dash)
+		label=L"f_1_Y(y) = N(Y=y;g(\hat x), g(σ_X)): leptokurtic", color=:green, linewidth=linewidth-2,  	linestyle=:dash)
 	annotate!(6.0, 0.89, text(L"f_1_Y(y)", annotateFontSize))
 	annotate!(8.5, 0.76, text(L"f_1_Y(y)", annotateFontSize))
 	#------------------------------------------------------------------------------
@@ -318,7 +313,7 @@ function murphy2023_BookII_Fig2Dot12_1()
 	#------------------------------------------------------------------------------
 	# mode markers
 	plot!([modeX], [0.0], marker=:diamond, color=:red, markersize=10, label=L"\hat x=6.5")                                                 
-	plot!([0.0], [g(modeX)], marker=:diamond, color=:orange, markersize=10, label=L"erroneous\ g(\hat X) = 0.82")        
+	plot!([0.0], [g(modeX)], marker=:diamond, color=:orange, markersize=10, label=L"naive\ g(\hat X) = 0.82")        
 	#------------------------------------------------------------------------------
 	# 2nd tentative PDF f_Y
 	plot!(permute=(:x, :y), 
@@ -336,7 +331,7 @@ md"
 ---
 ###### 3.6 The three *Naive Attempts* to Derive *PDF* $f_Y$
 We have attempted to derive the transformed density $f_Y$ by two *naive* approaches:
-- 1st approach ($:green, :dash$): we keep the *Gaussian* shape with transformed $μ_Y=g(\hat x), σ_Y=g(σ_X)$. We saw that its density's $σ_Y$ is far *too narrow*.:
+- 1st approach ($:green, :dash$): we keep the *Gaussian* shape with transformed $μ_Y=g(\hat x), σ_Y=g(σ_X)$. We saw that its density's $σ_Y$ is far too *leptokurtic*.:
 
 $f_{1Y}(y) = N(Y=y;μ_Y=g(\hat x), σ_Y=g(σ_X))$
 
@@ -443,7 +438,7 @@ function murphy2023_BookII_Fig2Dot12_2()
 	#-------------------------------------------------------------------------------
 	# mode markers
 	plot!([modeX], [0.0], marker=:diamond, color=:red, markersize=10, label=L"\hat x = 6.5")                                                                # mode(X)
-	plot!([0.0], [modeY], marker=:diamond, color=:orange, markersize=10, label=L"erroneous\ g(\hat x)=0.82")                                    # mode(Y)
+	plot!([0.0], [modeY], marker=:diamond, color=:orange, markersize=10, label=L"naive\ g(\hat x)=0.82")                                        # mode(Y)
 	#-------------------------------------------------------------------------------
 	# PDF f_X
 	gaussNX     = Normal(modeX, 1)                   # standard Gaussian N(x;0,1)
@@ -478,17 +473,19 @@ md"
 ---
 ###### 3.8 Transformation of *Densities* and the [*Jacobian Determinant*](https://en.wikipedia.org/wiki/Jacobian_matrix_and_determinant)
 
-A *change of variables* $y = g(x); x = g^{-1}(y)$ has a *different* effect whether a function $f(x)$ is a *density* or a common *monotonic* but otherwise *unconstrained* function. 
+A *change of variables* $y = g(x); x = g^{-1}(y)$ has a *different* effect depending on whether a function $f(x)$ is a *density* or an ordinary *monotonic* but otherwise *unconstrained* function. 
 
-A density is *constrained* to *nonnegative* values (*1st* constraint) and $\int f(x) dx = 1$ (*2nd* constraint). Thus the effect of a *variable change* $y = g(x)$ on a density $f_X(x)$ *cannot* be calculated by the simple transformation
+A density is *constrained* to *nonnegative* values (*1st* constraint) and $\int f(x) dx = 1$ (*2nd* constraint). Thus the effect of a *variable change* $y = g(x)$ on a *pdf* $f_X(x)$ *cannot* be calculated by the simple transformation
 
 $f_Y(y) \cancel{:=} f_X(g^{-1}(y)) \tag{cf. DLFC, (2.70)}.$ 
 
 Instead it has to be computed by 
 
-$f_Y(y) = f_X(g^{-1}(y))\left|(g^{-1})'(y)\right|\tag{cf. DLFC, (2.71)}.$
+$f_Y(y) = f_X(g^{-1}(y))\left|(g^{-1})'(y)\right|\tag{cf. DLFC, (2.71)},$
 
-The *proof* comes here. The new argument is that *probabilities* remain *unchanged* during [*change of variables*](https://en.wikipedia.org/wiki/Change_of_variables). This is a consequence of the *2nd* *constraint*. 
+where $\left|(g^{-1})'(y)\right|$ is called [*Jacobian* determinant](https://en.wikipedia.org/wiki/Jacobian_matrix_and_determinant). The *Jacobian* is a *correction* factor, which scales the density *by the ratio of lengths* (*Bishop & Bishop, 2024, p.42*).
+
+The *proof* comes here. The new insight is that *probabilities* remain *unchanged* during [*change of variables*](https://en.wikipedia.org/wiki/Change_of_variables). This is a consequence of the *2nd* *constraint*. 
 
 $f_Y(y)\cdot\delta y \simeq f_X(x)\cdot\delta x\;;\text{ with }\delta x > 0.$
 
@@ -503,7 +500,7 @@ $\lim_{\delta x \to 0} \left(f_Y(y) \simeq f_X(x)\cdot\left|\frac{\delta x}{\del
 $f_Y(y) = f_X(g^{-1}(y))\left|\frac{dg^{-1}(y)}{dy}\right|$ 
 $f_Y(y) = f_X(g^{-1}(y))\left|(g^{-1})'(y)\right|\tag{cf. DLFC, (2.71)}.$
 
-The expression $\left|\frac{dx}{dy}\right|=\left|(g^{-1})'(y)\right|$ is known as the [*Jacobian determinant*](https://en.wikipedia.org/wiki/Jacobian_matrix_and_determinant). The *Jacobian* is a *correction* factor, which scales the density *by the ratio of lengths* (*Bishop & Bishop, 2024, p.42*).
+Probability distributions are like long balloons with constant volume. The longer they are stretched, the smaller their diameter (= density) becomes. 
 
 "
 
@@ -592,7 +589,7 @@ md"
 ---
 ###### 3.10 Projection of Guesses $f_{2Y}(y), f_{3Y}(y), f_{4Y}(y)$ and *PDF* $f_Y(y)$ into *PMF* (=Histogram) Space
 
-This is a reconstruction in *Julia* of *fig. 2.12* from Bishop & Bishop (2024, p.44). The focus is on the plot of transformed density $f_Y(y) (:red)$. Unlike *fig.2.12* we have added the guesses $f_{2Y}(y) (:lightgreen), f_{3Y}(y) (:orange), \text{ and } c = f_{4Y}(y) (:blueviolet)$.
+This is a reconstruction in *Julia* of *fig. 2.12* from Bishop & Bishop (2024, p.44). The focus is on the plot of transformed *density* $f_Y(y) (:red)$. Unlike *fig.2.12* we have added the guesses $f_{2Y}(y) (:lightgreen), f_{3Y}(y) (:orange), \text{ and } c = f_{4Y}(y) (:blueviolet)$.
 
 "
 
@@ -640,7 +637,7 @@ function Bishop2023_DLFig2Dot122()
 	#-------------------------------------------------------------------------------
 	# mode markers
 	plot!([modeX], [0.0], marker=:diamond, color=:red, markersize=10, label=L"mode(X) = \hat x = 6.5")                                  # mode(X)
-	plot!([0.0], [g(modeX)], marker=:diamond, color=:orange, markersize=10, label=L"erroneous\ \hat y = g(\hat x)=0.82")              # mode(Y)=g(mode(X))
+	plot!([0.0], [g(modeX)], marker=:diamond, color=:orange, markersize=10, label=L"naive\ \hat y = g(\hat x)=0.82")                    # mode(Y)=g(mode(X))
 	#-------------------------------------------------------------------------------
 	# PDFs
 	gaussNX     = Normal(modeX, 1)                   # standard Gaussian N(x;0,1)
@@ -707,17 +704,17 @@ md"
 ---
 ###### 3.11 The *Transformation-free* Computation of $mode(Y) = \hat y$
 
-There are two *transformation-free* alternatives for the computation of $\hat y$. Both methods avoid the *direct* use of the transformation $g(.)$. Instead they examine the *shape* of the *transformed* density $f_Y(y)$. 
+There are two alternatives for calculating $\hat y$ that avoid the *direct* application of the transformation $g(.)$. Instead, the *shape* of the *transformed* density $f_Y(y)$ is examined.
 
 For the first alternative we need only $f_Y(y)$ and the $argmax(f_Y(y))$ function. The second alternative is based on its *derivative* $f'_Y(y)$ and by solving for the *root* of the zero-set derivative $f'_Y(y) = 0$. Both alternatives generate the correct value $mode(Y)= \hat y = 0.91$.
 
-We *cannot* regain $\hat x = 6.5$ by simple *inverse* transformation $g^{-1}(\hat y) = g^{-1}(0.91) = 7.31$. This value is greater than the *true* $mode(X)$'s value $\hat x = 6.5 < g^{-1}(\hat y) = 7.31$.
+We *cannot* regain the true $\hat x = 6.5$ by applying the simple *inverse* transformation $g^{-1}(\hat y) = g^{-1}(0.91) = 7.31$. This value is greater than the *true* mode's value $\hat x = 6.5 < g^{-1}(\hat y) = 7.31$.
 
 "
 
 # ╔═╡ d946c621-6ab3-45ea-bb94-e4dc46b62359
 md"
-The derivative $f'_Y(y)$ can be obtained either *symbolically* or *numerically*. First we determine the *derivative* $f'_Y(y)$ numerically:
+The derivative $f'_Y(y)$ can be obtained either *symbolically* or *numerically*. First we determine the *derivative* $f'_Y(y)$ numerically by using package $ForwardDiff$:
 
 $f'_Y(y) := fYD(y) = ForwardDiff.derivative(fY, y).$
 "
@@ -826,7 +823,7 @@ function Bishop2023_DLFig2Dot123()
 	plot!([modeX, modeX], [0.0, ys[argmax(fY.(ys))]], ls=:dash, linewidth=linewidth-1
 		  , color=:blueviolet, label=false) 
 	# mode marker line: horizontal from logistic sigmoid to g(mode(X))
-	plot!([modeX, 0.0], [g(modeX), g(modeX)], ls =:dash, linewidth=linewidth-1, color=:orange, label=L"erroneous\ g(\hat x) = g(mode(X) = 0.82")  
+	plot!([modeX, 0.0], [g(modeX), g(modeX)], ls =:dash, linewidth=linewidth-1, color=:orange, label=L"naive\ g(\hat x) = g(mode(X) = 0.82")  
 	annotate!(4.9, 0.85, text(L"g(\hat x) = g(mode(X)) = 0.82", annotateFontSize))
 	#-------------------------------------------------------------------------------
 	# new marker line:
@@ -837,7 +834,7 @@ function Bishop2023_DLFig2Dot123()
 	#-------------------------------------------------------------------------------
 	# mode markers
 	plot!([modeX], [0.0], marker=:diamond, color=:red, markersize=markersize, label=L"mode(X)=6.5")                                                  # modeX 
-	plot!([0.0], [g(modeX)], marker=:diamond, color=:orange, markersize=markersize, label=L"erroneous\ mode(Y) = g(\hat x) = 0.82") 
+	plot!([0.0], [g(modeX)], marker=:diamond, color=:orange, markersize=markersize, label=L"naive\ mode(Y) = g(\hat x) = 0.82") 
 	plot!([0.0], [ys[argmax(fY.(ys))]], marker=:diamond, color=:orangered2, markersize=markersize, label=L"true\ mode(Y) = \hat y = 0.91")  
 	#-------------------------------------------------------------------------------
 	# PDFs
@@ -882,23 +879,23 @@ Bishop2023_DLFig2Dot123()
 md"
 ---
 ###### 3.13 The Symbolic Derivative of $\frac{d}{dy}f_Y(y) =f'_Y(y)$
-In 3.1 (cf. DLFC, (2.72)) we argued that *simple* transformations $\hat y = g(\hat x), \hat x = g^{-1}(\hat y)$ are correct only if $f_X(x), f_Y(y)$ were *differentiable, unconstrained* functions. This is *not* true for *densities*. These are constrained to *nonnegative* values (= *1st* constraint) and $\int f(x) dx = 1$ (= *2nd* constraint).
+In 3.1 (cf. DLFC, (2.72)) we argued that *simple* transformations $\hat y = g(\hat x), \hat x = g^{-1}(\hat y)$ are correct *only if* $f_X(x), f_Y(y)$ were *differentiable, unconstrained* functions. This is *not* true for *densities*. These are constrained to *nonnegative* values (= *1st* constraint) and $\int f(x) dx = 1$ (= *2nd* constraint).
 
-Instead we derived for the computation of *mode* $\hat Y$ *transformation-free* alternatives either by appliction of $argmax(f_Y(y))$ or by solving for the *root* of the *zero-set* derivative $f'_Y(y) = 0$. In both cases we used numerical algorithms and got the correct value for *mode* $\hat y = 0.91$.
+Instead we derived for the computation of *mode* $\hat y$ *transformation-free* alternatives either by appliction of $argmax(f_Y(y))$ or by solving for the *root* of the *zero-set* derivative $f'_Y(y) = 0$. In both cases we used *numerical* algorithms and got the correct value for *mode* $\hat y = 0.91$.
 
-Bishop & Bishop (2024, p. 43) prefer to present the *correction factor* (= *Jacobian*) in the transformation $(DLFC, (2.71))$ *symbolically*. We try to elaborate their ideas as far as possible within *Julia* graphics.
+[Bishop & Bishop (2024, p. 43)](https://www.bishopbook.com/) prefer to present the *correction factor* (= *Jacobian*) in the transformation $(DLFC, (2.71))$ *symbolically*. We try to elaborate their ideas as far as possible within *Julia* graphics.
 
 We start with the transform of the density $f_X(x)$ in 3.1:
 
 $f_Y(y) = f_X(g^{-1}(y))\left|(g^{-1})'(y)\right|\tag{cf. DLFC, (2.71)}.$
 
-Then we determine the *derivative* $f'_Y(y)$:
+Then we'll find the *derivative* $f'_Y(y)$:
 
 $f'_Y(y) = \frac{d}{dy}(f_X(g^{-1}(y))|(g^{-1})'(y)|)=$
 
-$=\frac{(g^{-1})'(y)\left((g^{-1})'(y)^2f_X'(g^{-1}(y)) + f_X((g^{-1})(y))(g^{-1})''(y)\right)}{|(g^{-1})'(y)|}=$
+$=\frac{(g^{-1})'(y)\left((g^{-1})'(y)^2f_X'(g^{-1}(y)) + f_X(g^{-1})(y)(g^{-1})''(y)\right)}{|(g^{-1})'(y)|}=$
 
-$=\frac{(g^{-1})'(y)}{|(g^{-1})'(y)|}\cdot\left((g^{-1})'(y)^2 \cdot f_X'((g^{-1})(y)) + f_X((g^{-1})(y)) \cdot (g^{-1})''(y)\right).$
+$=\frac{(g^{-1})'(y)}{|(g^{-1})'(y)|}\cdot\left((g^{-1})'(y)^2 \cdot f_X'((g^{-1})(y)) + f_X(g^{-1})(y) \cdot (g^{-1})''(y)\right).$
 
 We abbreviate
 
@@ -915,7 +912,7 @@ $f'_Y(y) = (g^{-1})'(y)^2f_X'((g^{-1})(y)) + f_X((g^{-1})(y))(g^{-1})''(y).$
 If we reorder terms within brackets
 
 $f'_Y(y) = \tag{cf. DLFC, (2.73)}$
-$= f_X'((g^{-1})(y)) \cdot (g^{-1})'(y)^2 + f_X((g^{-1})(y))\cdot (g^{-1})''(y).$
+$= f_X'(g^{-1}(y)) \cdot (g^{-1})'(y)^2 + f_X(g^{-1}(y))\cdot (g^{-1})''(y).$
 
 this expression is apart from minor differences in spelling virtually identical to *Bishop & Bishop*'s (*DLFC, (2.73)*).
 
@@ -929,35 +926,42 @@ md"
 For bookkeeping purposes we denote the various factors of $f'_Y(y)$ with letters $a...d$. The correctness of the *symbolic* derivatives were crosschecked with [*Wolfram Alpha*](https://www.wolframalpha.com/).
 
 $f'_Y(y) = \tag{cf. DLFC, (2.73)}$
-$= f_X'(g^{-1})(y) \cdot (g^{-1})'(y)^2 + f_X(g^{-1})(y)\cdot (g^{-1})''(y)=$
+$= f_X'(g^{-1}(y)) \cdot (g^{-1})'(y)^2 + f_X(g^{-1}(y))\cdot (g^{-1})''(y)=$
 $= a\cdot b^2 + c \cdot d.$
 
 where:
 
-$a=f'_X(g^{-1})(y)  := fXD\_gInv(y),$
+$a=f'_X(g^{-1}(y))  := fXD\_gInv(y),$
 
-$b = \begin{cases}
-b_1=(g^{-1})'(y)    := gInvD\_Symb(y) = \frac{1}{y - y^2},  & \text{if symbolic} \\
-b_2=(g^{-1})'(y)    := gInvD\_Num(y), & \text{if numeric}
+$b = (g^{-1})'(y) = \begin{cases}
+b_1:= gInvD\_Symb(y) = \frac{1}{y - y^2},  & \text{if symbolic} \\
+b_2:= gInvD\_Num(y), & \text{if numeric}
 \end{cases}$
 
 $c=f_X(g^{-1})(y)   := fX\_gInv(y)$
 
-$d = \begin{cases}
-d_1=(g^{-1})''(y)   := gInvDD\_Symb(y) = \frac{2y-1}{(y-1)^2y^2},  & \text{if symbolic} \\
-d_2=(g^{-1})''(y)   := gInvDD\_Num(y). & \text{if numeric}
+$d = (g^{-1})''(y) = \begin{cases}
+d_1 := gInvDD\_Symb(y) = \frac{2y-1}{(y-1)^2y^2},  & \text{if symbolic} \\
+d_2 := gInvDD\_Num(y). & \text{if numeric}
 \end{cases}$
-
-It had be shown that
+ 
+It had be shown that in the context of *pdf*s
 
 $\hat y ≠ g(\hat x)\text{ and } \hat x ≠ g^{-1}(\hat y).$ 
 
-For the two *modes* $\hat x, \hat y$ both *derivatives* $f'_Y(\hat y) = f_X'(\hat x) = 0$ have to be *zero*. Under this assumption the relation between the derivatives is similar
+For the two *modes* $\hat x, \hat y$ both *derivatives* $f_X'(\hat x) = f'_Y(\hat y) = 0$ have to be *zero*. Under this assumption the relation between the *derivatives* can be described by these *implications*:
 
-$f'_Y(\hat y) ≠ f'_X(g(\hat x)) \neq 0 \text{ and } f'_X(\hat x) ≠ f'_Y(g^{-1}(\hat y)) \neq 0.$ 
+$f_X'(\hat x) = 0 \Rightarrow f'_Y(g(\hat x)) \neq 0,$
+$f'_Y(\hat y) = 0 \Rightarrow f'_X(g^{-1}(\hat y)) \neq 0.$ 
 
-The *simple* deviation $a - 0 = a$ or its *weighted* counterpart $a \cdot b^2 - 0 = a \cdot b^2$ are controlled or corrected by the second summand $c \cdot d$ in $f'_Y(y).$
+The *simple* deviation $a - 0 = a$ or its *weighted* counterpart $a \cdot b^2 - 0 = a \cdot b^2$ are controlled or corrected by the second summand $c \cdot d$ in $f'_Y(y).$ The second summand disapears when the transformation function $g(.)$ is *linear*.
 
+"
+
+# ╔═╡ 78581f63-cbf5-4ddc-adcd-a501548d43a7
+md"
+---
+##### 2026/07/01
 "
 
 # ╔═╡ 41b1196e-9f0a-4398-b5af-f442c0be2715
@@ -1163,12 +1167,6 @@ abs(gInv(0.82) - modeX)                  # ==> 0.016 --> :)
 # ╔═╡ f9053506-b821-41d8-82a1-fc71a01b6d45
 gInv(0.91)                               # ==> g^{-1}(mode(Y)) = 7.314 > 6.5 --> :(
 
-# ╔═╡ b421e33b-3692-4d12-b2ce-c65c0e2a57c3
-md"
----
-###### assumed correct until here, 2026/06/30
-"
-
 # ╔═╡ 2201195a-bc2d-4286-a580-81154bf64e87
 md"
 ---
@@ -1283,7 +1281,11 @@ In a *change of variable* problem you transform a (*random*) variable in a *line
 
 $mode(Y) ≠ g(mode(X)).$
 
-In that case you have to compute $mode(Y)$ by an *transformation-free* method. We demonstrated this with two alternative variants.
+In that case you have to compute $mode(Y)$ by a method which avoids the *direct* application of the transformation $g(.)$. Instead, the *shape* of the *transformed* density $f_Y(y)$ is examined.
+
+For the first alternative we need only $f_Y(y)$ and the $argmax(f_Y(y))$ function. The second alternative is based on its *derivative* $f'_Y(y)$ and by solving for the *root* of the zero-set derivative $f'_Y(y) = 0$. Both alternatives generate the correct value $mode(Y)= \hat y$.
+
+The *change of variable* problem in the context of *pmf*s has an analogue to an everyday toy problem. *Pmf*s are like long balloons with constant volume. The longer they are stretched, the smaller their diameter (= density) becomes. 
 
 "
 
@@ -3239,6 +3241,7 @@ version = "1.13.0+0"
 # ╠═e779b696-5f18-46b0-89ac-50629dd149bd
 # ╟─4c522ae1-16a7-463c-8366-427fb299af69
 # ╟─e991a48d-5d63-4891-99bb-51d29cfd03e6
+# ╟─78581f63-cbf5-4ddc-adcd-a501548d43a7
 # ╠═41b1196e-9f0a-4398-b5af-f442c0be2715
 # ╟─e60fb090-ea7b-4f27-8bb3-e4d9704f09d3
 # ╟─d9b644a4-c59e-40e7-beb3-d7aedf5c2a1e
@@ -3250,7 +3253,6 @@ version = "1.13.0+0"
 # ╠═d952f790-749c-48d0-a562-4e90393f0d65
 # ╠═6be4a020-234c-4600-a7fa-84ed6504718a
 # ╠═f9053506-b821-41d8-82a1-fc71a01b6d45
-# ╟─b421e33b-3692-4d12-b2ce-c65c0e2a57c3
 # ╟─2201195a-bc2d-4286-a580-81154bf64e87
 # ╟─a053117f-f2ff-49c0-9c7e-6f465a8e5bfb
 # ╠═fd53d5cb-e000-4144-9cb1-696aa962659c
