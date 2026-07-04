@@ -36,7 +36,7 @@ md"
 ====================================================================================
 #### MLD_DLFC, ch.02.4 Transformation Of Densities
 ##### file: PCM20260430\_MLD\_DLFC\_02.4\_TransformationOfDensities
-##### Julia/Pluto.jl: 1.12.6/0.20.4 by PCM *** 2026/07/01 ***
+##### Julia/Pluto.jl: 1.12.6/0.20.4 by PCM *** 2026/07/04 ***
 ====================================================================================
 "
 
@@ -954,28 +954,22 @@ For the two *modes* $\hat x, \hat y$ both *derivatives* $f_X'(\hat x) = f'_Y(\ha
 $f_X'(\hat x) = 0 \Rightarrow f'_Y(g(\hat x)) \neq 0,$
 $f'_Y(\hat y) = 0 \Rightarrow f'_X(g^{-1}(\hat y)) \neq 0.$ 
 
-The *simple* deviation $a - 0 = a$ or its *weighted* counterpart $a \cdot b^2 - 0 = a \cdot b^2$ are controlled or corrected by the second summand $c \cdot d$ in $f'_Y(y).$ The second summand disapears when the transformation function $g(.)$ is *linear*.
+The *simple* deviation $a - 0 = a$ or its *weighted* counterpart $a \cdot b^2 - 0 = a \cdot b^2$ are controlled or corrected by the second summand $c \cdot d$ in $f'_Y(y).$ The second summand disapears when the transformation function $g(.)$ is *linear*. For *linear* $g, g^{-1}$functions the second derivatives $g'', (g^{-1})''$ are *zero*.
 
-"
-
-# ╔═╡ 78581f63-cbf5-4ddc-adcd-a501548d43a7
-md"
----
-##### 2026/07/01
 "
 
 # ╔═╡ 41b1196e-9f0a-4398-b5af-f442c0be2715
-begin 
+begin # the components of f'_Y(y) := fYD(y) are:
 	#--------------------------------------------------------------------------------
 	fXD_gInv(y)    = ForwardDiff.derivative(fX_gInv, y)   # a  = numeric derivative
 	#--------------------------------------------------------------------------------
-	gInvD_Symb(y)  = 1.0/(y - y^2)                        # b1 = symbol. (g^{-1})'(y)
-	gInvD_Num(y)   = ForwardDiff.derivative(gInv, y)      # b2 = numeric (g^{-1})'(y)
+	gInvD_Symb(y)  = 1.0/(y - y^2)                        # b1(symbolic)=(g^{-1})'(y)
+	gInvD_Num(y)   = ForwardDiff.derivative(gInv, y)      # b2(numeric) =(g^{-1})'(y)
 	#--------------------------------------------------------------------------------
 	# fX_gInv                                             # c  = f_X(g^{-1})(y)
 	#--------------------------------------------------------------------------------
-	gInvDD_Symb(y) = (2.0*y - 1)/((y - 1.0)^2*y^2)        # d1 = symbol.(g^{-1})''(y)
-	gInvDD_Num(y)  = ForwardDiff.derivative(gInvD_Num, y) # d2 = numer. (g^{-1})''(y)
+	gInvDD_Symb(y) = (2.0*y - 1)/((y - 1.0)^2*y^2)        # d1(symbol.)=(g^{-1})''(y)
+	gInvDD_Num(y)  = ForwardDiff.derivative(gInvD_Num, y) # d2(numeric)=(g^{-1})''(y)
 	#--------------------------------------------------------------------------------
 end # begin
 
@@ -998,7 +992,7 @@ Now, we plot $f'_Y(y)$ and some of its components:
 
 For $f'_Y(y)$ the following components are *necessary* 
 
-- term $a$ in *pl8*
+- term $a := gInvDD_Symb.(ys)$ in *pl8*
 - term $b^2$ in *pl6*
 - term $c$ in *pl7*
 - term $d$ in *pl8*.
@@ -1022,33 +1016,35 @@ function derivatives()
 	markersize       = 14
 	#--------------------------------------------------------------------------------
 	# derivative f'_Y(y) = f'_Y(g^{-1}(y)
-	fYD(y)          = ForwardDiff.derivative(fY, y)     # numeric derivative
+	fYD(y)           = ForwardDiff.derivative(fY, y)     # numeric derivative
 	#--------------------------------------------------------------------------------
-	s(y)            = gInvD_Symb(y)/abs(gInvD_Symb(y))  # *** where used ??? ***
+	s(y)             = gInvD_Symb(y)/abs(gInvD_Symb(y))  # *** where used ??? ***
 	#-===============================================================================
-	pl1 = plot(title=L"pl1:\ density\ f_Y(y)", titlefontsize=titlefontsize,  permute=(:x, :y), linewidth=linewidth+1, legendfontsize=legendfontsize,
+	# pl1
+	pl1 = plot(title=L"pl1:\ density\ f_Y(y) := fY.(ys)", titlefontsize=titlefontsize,  permute=(:x, :y), linewidth=linewidth+1, legendfontsize=legendfontsize,
 	ylimits=(-1.0, 4.0),
-	ys, fY(ys), color=:red, label=L"density\ f_Y(y)", xlabel=L"Y", ylabel=L"f_Y(y)")
+	ys, fY.(ys), color=:red, label=L"pl1:density\ f_Y(y)", xlabel=L"Y", ylabel=L"f_Y(y)")
 	#
 	plot!(x2s, x -> ys[argmax(fY.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"mode\ \hat y = argmax(fY(ys)) = 0.91")
 	#
 	annotate!(1.4, 0.93, text(L"mode\ \hat y = ys[argmax(fY.(ys))] = 0.91", annotateFontSize))
-	#-----------------------------------------------------------------------------
-	pl2 = plot(title=L"pl2:\ derivative\ f'_Y(y)", 
+	#--------------------------------------------------------------------------------
+	# pl2
+	pl2 = plot(title=L"pl2:\ derivative\ f'_Y(y) := fYD.(ys)", 
 			ys, fYD.(ys), permute=(:x, :y), color=:magenta, 
 			xlimits=(-0.001, 1.01), 
-			titlefontsize=titlefontsize, legendfontsize=legendfontsize, 		   linewidth=linewidth, label=L"derivative\ f'_Y(y)", ylabel=L"f'_Y(y)", xlabel=L"Y")
+			titlefontsize=titlefontsize, legendfontsize=legendfontsize, 		   linewidth=linewidth, label=L"pl2:derivative\ f'_Y(y)", ylabel=L"f'_Y(y)", xlabel=L"Y")
 	#
 	plot!(xs, x -> ys[argmax(fY.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"mode\ \hat y = argmax(fY) = 0.91")
 	#
-	plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linewidth=linewidth-1, linestyle=:dash, label=L"f'_Y(y)=0")
+	plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linewidth=linewidth-1, linestyle=:dash, label=L"constraint\ f'_Y(y)=0")
 	#
 	annotate!(-40, 0.93, text(L"mode\ \hat y = ys[argmax(fY.(ys)] = 0.91", annotateFontSize))
 	#-----------------------------------------------------------------------------
 	pl3 = 
-		plot(ys, gInv.(ys), title=L"pl3_1: g^{-1}(y), pl3_2: |g^{-1}(y)|", titlefontsize=titlefontsize, legendfontsize=legendfontsize, color=:orange, permute=(:x, :y), linewidth=linewidth+2, label=L"pl3_1: g^{-1}(y) = logit\ transformation\ of\ Y", xlabel=L"Y", ylabel=L"X = g^{-1}(y), X = |g^{-1}(y)|")
+		plot(ys, gInv.(ys), title=L"pl3_1: g^{-1}(y), pl3_2: |g^{-1}(y)|", titlefontsize=titlefontsize, legendfontsize=legendfontsize, color=:orange, permute=(:x, :y), linewidth=linewidth+2, label=L"pl3_1 (=logit\ trafo): g^{-1}(y)", xlabel=L"Y", ylabel=L"X = g^{-1}(y), X = |g^{-1}(y)|")
 		#--------------------------------------------------------------------------
-		plot!(ys, abs.(gInv.(ys)), title=L"pl3_1: g^{-1}(y), pl3_2: |g^{-1}(y)|", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl3_2:\ |g^{-1}(y)| = |logit\ transformation\ of\ Y|")
+		plot!(ys, abs.(gInv.(ys)), title=L"pl3_1: g^{-1}(y), pl3_2: |g^{-1}(y)|", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl3_2 (=|logit\ trafo|):\ |g^{-1}(y)| ")
 	#-----------------------------------------------------------------------------
 	pl4 = plot(ys, gInv.(ys)./abs.(gInv.(ys)), title=L"pl4:\forall y \in [0,1]:\frac{g^{-1}(y)}{|g^{-1}(y)|}=1", titlefontsize=titlefontsize, legendfontsize=legendfontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, ylabel=L"X = \frac{g^{-1}(y)}{|g^{-1}(y)|}", xlabel=L"Y",
 	label=L"pl4:\forall y \in [0,1]:\frac{g^{-1}(y)}{|g^{-1}(y)|} = 1")
@@ -1066,13 +1062,13 @@ function derivatives()
 	pl7 = 
 		plot(ys, fX_gInv(ys), permute=(:x, :y), color=:blueviolet, linewidth=linewidth+1, legendfontsize=legendfontsize, label = L"pl7:\ density:\ c = f_X(g^{-1}(y))")
 		#------------------------------------------------------------------------
-		plot!(ys, fXD_gInv.(ys), title=L"pl7:dens.c=f_X(g^{-1}(y)),deriv.a=f'_X(g^{-1}(y))", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth-1, label=L"pl7:\ derivative\ a = f'_X(g^{-1}(y))", xlabel=L"Y", ylabel=L"X = f_X(g^{-1}(y)), X = f'_X(g^{-1}(y))")
+		plot!(ys, fXD_gInv.(ys), title=L"pl7:c=f_X(g^{-1}(y)), a=f'_X(g^{-1}(y))", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth-1, label=L"pl7:\ derivative\ a = f'_X(g^{-1}(y))", xlabel=L"Y", ylabel=L"X = f_X(g^{-1}(y)), X = f'_X(g^{-1}(y))")
 		#
-		plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linewidth=linewidth-1, linestyle=:dash, label=L"f'_X(g^{-1}(y)) = 0")
+		plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linewidth=linewidth-1, linestyle=:dash, label=L"constraint\ f'_X(g^{-1}(y)) = 0")
 	    #
-		plot!(x2s, x -> ys[argmax(fX_gInv.(ys))], linewidth=linewidth-1, color=:blueviolet, linestyle=:dash, label=L"erron.\ mode\ \hat y = argmax(fX_gInv.(ys)) = 0.82")
+		plot!(x2s, x -> ys[argmax(fX_gInv.(ys))], linewidth=linewidth-1, color=:blueviolet, linestyle=:dash, label=L"naive\ \hat y = argmax(fX\_gInv.(ys)) = 0.82")
 		#
-		annotate!(0.0, 0.84, text(L"erron.mode\ \hat y = ys[argmax(fY.(ys))] = 0.82", annotateFontSize))
+		annotate!(0.0, 0.84, text(L"naive.mode\ \hat y = ys[argmax(fY.(ys))] = 0.82", annotateFontSize))
 	#-----------------------------------------------------------------------------
 	pl8 = 
 		plot(ys, gInvDD_Symb.(ys), color=:orange, permute=(:x, :y), linewidth=linewidth+2, legendfontsize=legendfontsize, label=L"pl8_1:\ symbol.deriv.\ d_1=(g^{-1})''(y)", xlabel=L"Y", ylabel=L"X = d = (g^{-1})''(y)")
@@ -1084,6 +1080,12 @@ end # function derivatives()
 
 # ╔═╡ a2aa8846-e540-4403-9da9-ad12b0622859
 derivatives()
+
+# ╔═╡ 78581f63-cbf5-4ddc-adcd-a501548d43a7
+md"
+---
+##### 2026/07/04
+"
 
 # ╔═╡ 34390199-86bc-4d48-a91c-2d5847fbabf9
 md"
@@ -3241,11 +3243,11 @@ version = "1.13.0+0"
 # ╠═e779b696-5f18-46b0-89ac-50629dd149bd
 # ╟─4c522ae1-16a7-463c-8366-427fb299af69
 # ╟─e991a48d-5d63-4891-99bb-51d29cfd03e6
-# ╟─78581f63-cbf5-4ddc-adcd-a501548d43a7
 # ╠═41b1196e-9f0a-4398-b5af-f442c0be2715
 # ╟─e60fb090-ea7b-4f27-8bb3-e4d9704f09d3
 # ╟─d9b644a4-c59e-40e7-beb3-d7aedf5c2a1e
 # ╟─a2aa8846-e540-4403-9da9-ad12b0622859
+# ╟─78581f63-cbf5-4ddc-adcd-a501548d43a7
 # ╟─34390199-86bc-4d48-a91c-2d5847fbabf9
 # ╟─9f52849a-621e-4e8e-a5a5-d711e301c617
 # ╠═064fbc16-56d1-416e-90c0-24a60ebeaba0
