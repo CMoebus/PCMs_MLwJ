@@ -36,7 +36,7 @@ md"
 ====================================================================================
 #### MLD_DLFC, ch.02.4 Transformation Of Densities
 ##### file: PCM20260430\_MLD\_DLFC\_02.4\_TransformationOfDensities
-##### Julia/Pluto.jl: 1.12.6/0.20.4 by PCM *** 2026/07/05 ***
+##### Julia/Pluto.jl: 1.12.6/0.20.4 by PCM *** 2026/07/06 ***
 ====================================================================================
 "
 
@@ -961,15 +961,16 @@ The *simple* deviation $a - 0 = a$ or its *weighted* counterpart $a \cdot b^2 - 
 # ╔═╡ 41b1196e-9f0a-4398-b5af-f442c0be2715
 begin # the components of f'_Y(y) := fYD(y) are:
 	#--------------------------------------------------------------------------------
-	fXD_gInv(y)    = ForwardDiff.derivative(fX_gInv, y)   # a  = numeric derivative
+	fXD_gInv(y)    = ForwardDiff.derivative(fX_gInv, y) # a  = numeric derivative
 	#--------------------------------------------------------------------------------
-	gInvD_Symb(y)  = 1.0/(y - y^2)                        # b1(symbolic)=(g^{-1})'(y)
-	gInvD_Num(y)   = ForwardDiff.derivative(gInv, y)      # b2(numeric) =(g^{-1})'(y)
+	gInvD_Symb(y)  = 1.0/(y - y^2)                      # b1(symbolic)=(g^{-1})'(y)
+	gInvD_Num(y)   = ForwardDiff.derivative(gInv, y)    # b2(numeric) =(g^{-1})'(y)
 	#--------------------------------------------------------------------------------
-	# fX_gInv                                             # c  = f_X(g^{-1})(y)
+	# fX_gInv                                           # c  = f_X(g^{-1})(y)
 	#--------------------------------------------------------------------------------
-	gInvDD_Symb(y) = (2.0*y - 1)/((y - 1.0)^2*y^2)        # d1(symbol.)=(g^{-1})''(y)
-	gInvDD_Num(y)  = ForwardDiff.derivative(gInvD_Num, y) # d2(numeric)=(g^{-1})''(y)
+	gInvDD_Symb(y) = (2.0*y - 1)/((y - 1.0)^2*y^2)      # d1(symbol.)=(g^{-1})''(y)
+	gInvDD_Num(y)  = 
+		ForwardDiff.derivative(gInvD_Num, y)            # d2(numeric)=(g^{-1})''(y)
 	#--------------------------------------------------------------------------------
 end # begin
 
@@ -1089,16 +1090,16 @@ md"
 The following plot displays the *densities*, *derivatives* of *density*, the *uncorrected (= naive)*, and the *corrected (= true)* $mode(Y) = \hat y$:
 
 - *before* the correction 
-$density\ c = f_X(g^{-1}(y)) := fX\_gInv(y)\;;\text{ color=:blueviolet}$
-$derivative \text{ of density } a = f'_X(g^{-1}(y)) := fXD\_gInv.(ys)\;;\text{ color=:blueviolet}$
+$density\ c = f_X(g^{-1}(y)) := fX\_gInv(y)\;;\text{ color=:blueviolet, lw=3.5}$
+$derivative \text{ of density } a = f'_X(g^{-1}(y)) := fXD\_gInv.(ys)\;;\text{ color=:blueviolet, lw=1.5}$
 $\text{uncorr. } (= naive )\ mode\ \hat y = g(mode(X)) = argmax(f_X(g^{-1}.(ys))\;;\text{ :blueviolet, :dash}$
 
 - *after* the correction
-$\text{density } f_Y(y) := fY\_gInv.(ys)\;;\text{ color=:red}$
-$derivative \text{ of density } f'_Y(y) := fYD.(ys); color=:red$
+$\text{density } f_Y(y) := fY.(ys)\;;\text{ color=:red, lw=3.5}$
+$derivative \text{ of density } f'_Y(y) := fYD.(ys); color=:red, lw=1.5$
 $\text{corrected } \hat y = mode(Y) = argmax(f_Y.(ys)); color=:red, linestyle=:dash$
 
-From the plotted results (below) we see that the retransformation $g^{-1}(g(mode(X)))$ of the *naive* $g(mode(X))=0.82$ maps into $mode(X) = 6.5$. This is *not* true for the *corrected (= true)* $mode(Y) = 0.91$. This is an example that in a *change of variable* situation you must *not* use the transformation pair $g(.), g^{-1}(.)$ for *mode* computations when $g$ is *nonlinear*.
+From the plotted results (below) we see that the *back*transformation $g^{-1}(g(mode(X)))$ of the *naive* $g(mode(X))=0.82$ maps into the *true* $mode(X) =\hat x = 6.5$. This is *not* true for the *corrected (= true)* $mode(Y) = \hat y = 0.91$. This is an example that in a *change of variable* situation you must *not* use the transformation pair $g(.), g^{-1}(.)$ for *mode* computations when $g$ is *nonlinear*.
 
 $g(mode(X))_{uncorrected} = 0.82$
 $g^{-1}(g(mode(X))_{naive}) = 6.516 ≈ mode(X) = \hat x$
@@ -1107,11 +1108,17 @@ $g^{-1}(mode(Y)_{corrected}) = 7.314 > mode(X) = \hat x = 6.516.$
 
 "
 
-# ╔═╡ 78581f63-cbf5-4ddc-adcd-a501548d43a7
-md"
----
-##### 2026/07/05
-"
+# ╔═╡ fc82f0f5-d850-44f9-9726-9bccea28df3f
+logisticSigmoid(6.5)                     # ==> g(mode(X)) = 0.81 < mode(Y)
+
+# ╔═╡ d952f790-749c-48d0-a562-4e90393f0d65
+gInv(0.82)                               # ==> g^{-1}(g(mode(X))) = 6.516 --> :)
+
+# ╔═╡ 6be4a020-234c-4600-a7fa-84ed6504718a
+abs(gInv(0.82) - modeX)                  # ==> 0.016 --> :)
+
+# ╔═╡ f9053506-b821-41d8-82a1-fc71a01b6d45
+gInv(0.91)                               # ==> g^{-1}(mode(Y)) = 7.314 > 6.5 --> :(
 
 # ╔═╡ 9f52849a-621e-4e8e-a5a5-d711e301c617
 function densitiesBeforeAndAfterTransormation()
@@ -1126,27 +1133,23 @@ function densitiesBeforeAndAfterTransormation()
 	xlimits          = (-0.05, 1.14)
 	size             = (800, 800)
 	#--------------------------------------------------------------------------------
-	# derivative f'_Y(y)
-	fYD(y)   = ForwardDiff.derivative(fY, y)   # result) numeric derivative
-	#--------------------------------------------------------------------------------
 	# before correction
 	plot(ys, fX_gInv(ys), title=L"The\ Correction\ Effect\ on\ Densities\ and\ Modes", titlefontsize=titlefontsize, permute=(:x, :y), ylimits=ylimits, xlimits=xlimits, color=:blueviolet, linewidth=linewidth+1, label = L"uncorrected\ density: c = f_X(g^{-1}(y)) := fX\_gInv.(ys)")	#--------------------------------------------------------------------------------
 	plot!(ys, fXD_gInv.(ys), color=:blueviolet, permute=(:x, :y), linewidth=linewidth-1, label=L"uncorrected\ derivative: a = f'_X(g^{-1}(y))")
 	#
-	plot!(x2s, x -> ys[argmax(fX_gInv.(ys))], linewidth=linewidth-1, color=:blueviolet, linestyle=:dash, label=L"c = naive\ \hat y = g(mode(X)) = argmax(f_X(g^{-1}.(ys)) = 0.82")
+	plot!(x2s, x -> ys[argmax(fX_gInv.(ys))], linewidth=linewidth-1, color=:blueviolet, linestyle=:dash, label=L"c = naive\ mode\ \hat y = g(mode(X)) = argmax(f_X(g^{-1}.(ys)) = 0.82")
 	#
 	annotate!(0.0, 0.84, text(L"naive\ mode\ \hat y = argmax(fY.(ys)) = 0.82", annotateFontSize))
 	#
-	println("c = naive mode(Y) = g(mode(X)) = ", ys[argmax(fX_gInv.(ys))])
-	#--------------------------------------------------------------------------------
 	plot!([0.0, 0.0], [0.0, 1.0], color=:black, linestyle=:dash, linewidth=linewidth-1, label=L"constraint\ of\ derivatives:\ a = f'_{...}(y)) = 0")
 	#--------------------------------------------------------------------------------
-	# after correction
+	println("c = naive mode(Y) = g(mode(X)) = ", ys[argmax(fX_gInv.(ys))])
 	println("corrected mode(Y)              = ", ys[argmax(fY.(ys))])
-	#--------------------------------------------------------------------------------
-	plot!(ys, fY.(ys), permute=(:x, :y), color=:red, linewidth=linewidth+1, label=L"corrected\ density\ f_Y(g^{-1}(y)):=fY\_gInv.(ys)")
+	#-===============================================================================
+	# after correction
+	plot!(ys, fY.(ys), permute=(:x, :y), color=:red, linewidth=linewidth+1, label=L"corrected\ density\ f_Y(y):=fY.(ys)")
 	#
-	plot!(ys, fYD.(ys), permute=(:x, :y), color=:red, linewidth=linewidth-1, label=L"corrected\ derivative\ f'_Y(g^{-1}(y)):=fYD.(ys)")
+	plot!(ys, fYD.(ys), permute=(:x, :y), color=:red, linewidth=linewidth-1, label=L"corrected\ derivative\ f'_Y(y):=fYD.(ys)")
 	#
 	plot!(x2s, x -> ys[argmax(fY.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"corrected\ mode(Y) = argmax(f_Y.(ys)) = 0.91")
 	#
@@ -1157,17 +1160,12 @@ end # function densitiesBeforeAndAfterTransormation()
 # ╔═╡ 064fbc16-56d1-416e-90c0-24a60ebeaba0
 densitiesBeforeAndAfterTransormation()
 
-# ╔═╡ fc82f0f5-d850-44f9-9726-9bccea28df3f
-logisticSigmoid(6.5)                     # ==> g(mode(X)) = 0.81 < mode(Y)
-
-# ╔═╡ d952f790-749c-48d0-a562-4e90393f0d65
-gInv(0.82)                               # ==> g^{-1}(g(mode(X))) = 6.516 --> :)
-
-# ╔═╡ 6be4a020-234c-4600-a7fa-84ed6504718a
-abs(gInv(0.82) - modeX)                  # ==> 0.016 --> :)
-
-# ╔═╡ f9053506-b821-41d8-82a1-fc71a01b6d45
-gInv(0.91)                               # ==> g^{-1}(mode(Y)) = 7.314 > 6.5 --> :(
+# ╔═╡ 78581f63-cbf5-4ddc-adcd-a501548d43a7
+md"
+---
+##### 2026/07/06
+The following contains errors !
+"
 
 # ╔═╡ 2201195a-bc2d-4286-a580-81154bf64e87
 md"
@@ -1211,37 +1209,43 @@ function fY_D_2nd()
 	plA  = 
 		plot(ys, termA,  permute=(:x, :y), title=L"term\ a:\ f'_X(g^{-1}(y))", titlefontsize=titlefontsize, color=:blueviolet, linewidth=linewidth, label=L"a = f'_X(g^{-1}(y))", xlabel=L"Y", ylabel=L"X=f'_X(g^{-1}(y))")
 		#
-		plot!([0.0, 0.0], [0.0, 1.0], color=:blueviolet, linestyle=:dash, linewidth=linewidth-1, label=L"f'_X(g^{-1}(y)) = 0")
+		plot!([0.0, 0.0], [0.0, 1.0], color=:blueviolet, linestyle=:dash, linewidth=linewidth-1, label=L"constraint\ f'_X(g^{-1}(y)) = 0")
 		#
 		println("find_zero(ys -> termA.(ys), 0.8)    = ", argMaxTermA)
 	    #
-		plot!([argMaxTermA, argMaxTermA], [-4.3, 1.5], permute=(:x, :y), color=:blueviolet, linestyle=:dash, linewidth=linewidth-1, label=L"uncorrected\ g(mode(X) = g(\hat x) = argMaxTermA = 0.82")
+		plot!([argMaxTermA, argMaxTermA], [-4.3, 1.5], permute=(:x, :y), color=:blueviolet, linestyle=:dash, linewidth=linewidth-1, label=L"uncorr.\ (=naive)\ g(mode(X) = g(\hat x) = argMaxTermA = 0.82")
 		#
-	    println("g(mode(X)) = argMaxTermA            = ", argMaxTermA)
+	    println("naive g(mode(X)) = argMaxTermA      = ", argMaxTermA)
 	    # 
-		annotate!(-1.5, 0.84, text(L"uncorrected\ g(mode(X)) = 0.82", annotateFontSize))
+		annotate!(-1.5, 0.84, text(L"uncorrected\ (=naive)\ g(mode(X)) = 0.82", annotateFontSize))
 	#--------------------------------------------------------------------------------
 	plB  = 
-		plot(ys, termB,  permute=(:x, :y), title=L"term\ b^2:\ ((g^{-1})'(y))^2", titlefontsize=titlefontsize, color=:blueviolet, linewidth=linewidth, label=L"b^2 = ((g^{-1})'(y))^2", xlabel=L"Y", ylabel=L"X=((g^{-1})'(y))^2")
+		plot(ys, termB,  permute=(:x, :y), title=L"term\ b^2:\ (g^{-1})'(y)^2", titlefontsize=titlefontsize, color=:blueviolet, linewidth=linewidth, label=L"b^2 = (g^{-1})'(y)^2", xlabel=L"Y", ylabel=L"X=(g^{-1})'(y)^2")
 	#--------------------------------------------------------------------------------
 	plC = 
 		plot(ys, termC, permute=(:x, :y), title=L"term\ c:\ f_X(g^{-1}(y))", titlefontsize=titlefontsize, color=:blueviolet, linewidth=linewidth, label=L"c = f_X(g^{-1}(y))", xlabel=L"Y", ylabel=L"X=f_X(g^{-1}(y))")
+	    #--------------------------------------------------------
+		plot!(ys, y -> ys[argmax(termC.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"naive\ mode\ \hat y = argmax(termC.(ys)) = 0.82")
+		# 
+		annotate!(0.5, 0.84, text(L"uncorrected\ (=naive)\ g(mode(X)) = 0.82", annotateFontSize))
+	    #--------------------------------------------------------
+	    println("naive mode(Y) = argmax(termC.(ys))  = ", ys[argmax(termC.(ys))])
 	#--------------------------------------------------------------------------------
 	plD = 
 		plot(ys, termD, permute=(:x, :y), title=L"term\ d:\ (g^{-1})''(y)", titlefontsize=titlefontsize, color=:blueviolet, linewidth=linewidth, label=L"d = (g^{-1})''(y)", xlabel=L"Y", ylabel=L"X=(g^{-1})''(y)")
 	#--------------------------------------------------------------------------------
 	plAB = 
-		plot(ys, termAB, permute=(:x, :y), ylimits=(-40, 30), title=L"term\ a\cdot b^2:\ f'_X(g^{-1}(y))\cdot ((g^{-1})'(y))^2", titlefontsize=titlefontsize, color=:blueviolet, linewidth=linewidth-1, label=L"a\cdot b^2 = f'_X(g^{-1}(y))\cdot ((g^{-1})'(y))^2", xlabel=L"Y", ylabel=L"X = f'_X(g^{-1}(y))\cdot ((g^{-1})'(y))^2")
+		plot(ys, termAB, permute=(:x, :y), ylimits=(-40, 30), title=L"term\ a\cdot b^2:\ f'_X(g^{-1}(y))\cdot (g^{-1})'(y)^2", titlefontsize=titlefontsize, color=:blueviolet, linewidth=linewidth-1, label=L"a\cdot b^2 = f'_X(g^{-1}(y))\cdot (g^{-1})'(y)^2", xlabel=L"Y", ylabel=L"X = f'_X(g^{-1}(y))\cdot (g^{-1})'(y)^2")
 		#
 		println("find_zero(ys -> termAB.(ys), 0.8)   = ", rootTermAB)
 		#
-		plot!([rootTermAB, rootTermAB], [-40.0, 30.0], permute=(:x, :y), color=:blue, linestyle=:dash, linewidth=linewidth-1, label=L"uncorrected\ g(\hat x = g(mode(X)) = argMaxTermAB = 0.82")
+		plot!([rootTermAB, rootTermAB], [-40.0, 30.0], permute=(:x, :y), color=:blue, linestyle=:dash, linewidth=linewidth-1, label=L"uncorr.\  (=naive)\ g(\hat x) = g(mode(X) = argMaxTermAB = 0.82")
 		#
-		plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linestyle=:dash, linewidth=linewidth-1, label=L"f'_X(g^{-1}(y))\cdot ((g^{-1})'(y))^2 = 0")
+		plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linestyle=:dash, linewidth=linewidth-1, label=L"constraint\ f'_X(g^{-1}(y))\cdot (g^{-1})'(y)^2 = 0")
 		#
-	    println("uncorrected g(mode(X)) = rootTermAB = ", 					rootTermAB)
+	    println("uncorrected (=naive) g(mode(X)) = rootTermAB = ", 						rootTermAB)
 	    #
-		annotate!(-1.5, 0.84, text(L"uncorrected\ g(mode(X)) = 0.82", annotateFontSize))
+		annotate!(-1.5, 0.84, text(L"uncorrected\ (=naive)\ g(mode(X)) = 0.82", annotateFontSize))
 	#--------------------------------------------------------------------------------
 	plCD = 
 		plot(ys, ys -> termCD.(ys), permute=(:x, :y), title=L"term\ c \cdot d:\ f_X(g^{-1}(y)) \cdot (g^{-1})''(y)", titlefontsize=titlefontsize, color=:blueviolet, linewidth=linewidth-1, label=L"c \cdot d:\ f_X(g^{-1}(y)) \cdot (g^{-1})''(y)", xlabel=L"Y", ylabel=L"X = f_X(g^{-1}(y)) \cdot (g^{-1})''(y)")
@@ -1255,6 +1259,8 @@ function fY_D_2nd()
 	#--------------------------------------------------------------------------------
 	plABCD =
 		plot(ys, ys -> termABCD.(ys), permute=(:x, :y), ylimits=(-40, 30), title=L"deriv.: f'_Y(y) = a \cdot b^2 + c \cdot d", titlefontsize=titlefontsize, color=:red, linewidth=linewidth, label=L"f'_Y(y) = a \cdot b^2 + c \cdot d")
+	    #
+		plot!(ys, fYD.(ys), permute=(:x, :y), color=:green, linewidth=linewidth-1, label=L"corrected\ derivative\ f'_Y(y):=fYD.(ys)")
         # 
 		plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linestyle=:dash, linewidth=linewidth-1, label=L"f'_Y(y) = 0")
 		#=
@@ -3253,10 +3259,10 @@ version = "1.13.0+0"
 # ╠═6be4a020-234c-4600-a7fa-84ed6504718a
 # ╠═f9053506-b821-41d8-82a1-fc71a01b6d45
 # ╟─9f52849a-621e-4e8e-a5a5-d711e301c617
-# ╠═064fbc16-56d1-416e-90c0-24a60ebeaba0
+# ╟─064fbc16-56d1-416e-90c0-24a60ebeaba0
 # ╟─78581f63-cbf5-4ddc-adcd-a501548d43a7
 # ╟─2201195a-bc2d-4286-a580-81154bf64e87
-# ╟─a053117f-f2ff-49c0-9c7e-6f465a8e5bfb
+# ╠═a053117f-f2ff-49c0-9c7e-6f465a8e5bfb
 # ╠═fd53d5cb-e000-4144-9cb1-696aa962659c
 # ╟─4f24698d-3d7e-4656-b6bc-b566fdce7a69
 # ╟─cc6463bb-7878-4c4c-9fef-553ee17868ad
