@@ -36,7 +36,7 @@ md"
 ====================================================================================
 #### MLD_DLFC, ch.02.4 Transformation Of Densities
 ##### file: PCM20260430\_MLD\_DLFC\_02.4\_TransformationOfDensities
-##### Julia/Pluto.jl: 1.12.6/0.20.4 by PCM *** 2026/07/06 ***
+##### Julia/Pluto.jl: 1.12.6/0.20.4 by PCM *** 2026/07/18 ***
 ====================================================================================
 "
 
@@ -135,17 +135,6 @@ $x = g^{-1}(y) := \ln\left(\frac{y}{1 - y}\right) + 5.$
 
 "
 
-# ╔═╡ f9157177-622f-4177-849d-db51c0a00c66
-begin   # definition of constants
-	const nSamples = 10^5
-	const modeX    =  6.5
-	const σX       =  1.0
-	const Δx       =  0.1
-	const Δy       =  0.01
-	const xs       =  0.0:Δx:10.5
-	const ys       =  0.0:Δy: 1.0
-end # begin
-
 # ╔═╡ 3eb00d2d-7186-4e08-adff-396bdae8fe7c
 logisticSigmoid(x) = 1.0/(1.0 + exp(5.0 - x))   # definition of logistic sigmoid
 
@@ -154,6 +143,22 @@ logit(y) = log(y/(1.0 - y)) + 5.0               # definition of logit function
 
 # ╔═╡ fe9e36b9-0fbd-4c99-a16c-731e2569e849
 g(x)     = logisticSigmoid(x)                   # definition of g(x)
+
+# ╔═╡ f9157177-622f-4177-849d-db51c0a00c66
+begin   # definition of constants
+	const nSamples = 10^5
+	const modeX    =  6.5
+	const modeY    = g(modeX)
+	const σX       =  1.0
+	const Δx       =  0.1
+	const Δy       =  0.01
+	const xs       =  Δx:Δx:10.5
+	const x2s      =  Δx:Δx:4.0
+	const x3s      =  -80.0:Δx:15.0
+	const x4s      =  -4.0:Δx:4.0
+	const ys       =  Δy:Δy:1.0
+	const y2s      =  Δy:Δy:1.0-Δy
+end # begin
 
 # ╔═╡ 900bfc5c-7c6b-4fa6-be6f-63d2f8cc6e14
 gInv(y)  = logit(y)                             # definition of g^{-1}(y)
@@ -214,15 +219,15 @@ function myGaussianPlot()
 	randomYs = g.(randomXs)
 	σXs      = std(randomXs)
 	σYs      = std(randomYs)
-	titlefontsize = 17
-	legendfontsize = 12
-	xlimits=(0.0, 10.5)
-	ylimits=(-0.001, 1.3)
-	guidefontsize = 18
+	titlefontsize    = 17
+	legendfontsize   = 12
+	xlimits          = (0.0, 10.5)
+	ylimits          = (-0.001, 1.3)
+	guidefontsize    = 18
 	annotateFontSize = 15
-	size=(1000, 800)
-	linewidth = 4
-	markersize = 14
+	size             = (1000, 800)
+	linewidth        =  4
+	markersize       = 14
 	#------------------------------------------------------------------------------
 	plot(title=L"Logistic\ Sigmoid\ y = g(x), PMF\ p_X, and\ Guesses\ of\ PDFs\ f_{1Y}(y), f_{2Y}(y)", titlefontsize=titlefontsize, guidefontsize=guidefontsize, size=size, xlimits=xlimits, ylimits=ylimits, legendfontsize=legendfontsize)
 	plot!(xs, g, label=L"Logistic\ Sigmoid\ g(x)", linewidth=linewidth, color=:blueviolet, xlabel=L"X", ylabel=L"Y\ \ (= P)")
@@ -277,20 +282,19 @@ $\hat y ≠ g(\hat x).$
 
 # ╔═╡ 22f653bd-3f02-4f1d-825b-11ef663db9bf
 function murphy2023_BookII_Fig2Dot12_1()
-	modeY    = g(modeX)
 	randomXs = randn(10^5).+ modeX
 	randomYs = g.(randomXs)
 	σX       = std(randomXs)
 	σY       = std(randomYs)
-	titlefontsize = 17
-	xlimits=(0.0, 10.5)
-	ylimits=(-0.001, 1.3)
-	guidefontsize = 18
-	legendfontsize = 12
+	titlefontsize    = 17
+	xlimits          = (0.0, 10.5)
+	ylimits          = (-0.001, 1.3)
+	guidefontsize    = 18
+	legendfontsize   = 12
 	annotateFontSize = 15
-	size=(1000, 800)
-	linewidth = 4
-	markersize = 14
+	size             = (1000, 800)
+	linewidth        =  4
+	markersize       = 14
 	#------------------------------------------------------------------------------
 	plot(title=L"Logistic\ Sigmoid\ y = g(x),\ Probability\ Mass\ Functions\ p_X,\ and\ p_Y", titlefontsize=titlefontsize, legendfontsize=legendfontsize, guidefontsize=guidefontsize, size=size, xlimits=xlimits, ylimits=ylimits)
 	plot!(xs, g, label=L"Logistic\ Sigmoid\ g(x)", lw=4, color=:blueviolet, xlabel=L"X", ylabel=L"Y\ \ (=P)")
@@ -354,9 +358,11 @@ To evaluate the quality of the 3rd approach we still have to project it into the
 let	randomXs  = randn(10^5).+ modeX
 	randomYs  = g.(randomXs)
 	σY        = std(randomYs)
-	titlefontsize=11
-	linewidth = 2
-	size      = (600, 375)
+	titlefontsize    = 11
+	annotateFontSize = 10
+	markersize       =  5
+	linewidth        = 2
+	size             = (600, 375)
 	#----------------------------------------------------------------------------
 	function negLogLikelihood(params)
 		ξ, ω, α = params
@@ -366,19 +372,39 @@ let	randomXs  = randn(10^5).+ modeX
 	end # function negLogLikelihood(params)
 	#------------------------------------------------------------------------------
 	pl6 = 	# 2nd tentative PDF f_Y
-		plot(size=size, title=L"f_{2Y}(y) = N(Y;g(\hat X), σ_Y)", titlefontsize=titlefontsize, linewidth=linewidth,
+		plot(size=size, title=L"f_{2Y}(y) = N(Y;g(\hat X), σ_Y)", 				titlefontsize=titlefontsize, linewidth=linewidth,
 		permute=(:y, :x), ys, pdf.(Normal(g(modeX), σY), ys), 
 		label=L"f_{2Y}(y) = N(Y;g(\hat X), σ_Y)", color=:lightgreen)
+	    #--------------------------------------------------------------
+		# mode marker line: horizontal from logistic sigmoid to modeY
+		plot!([modeX, 0.0], [modeY, modeY], ls =:dash, lw=linewidth-1, color=:orange, label=false)	
+	    #--------------------------------------------------------------
+		plot!([0.0], [g(modeX)], marker=:diamond, color=:orange, markersize=markersize, label=L"naive\ g(\hat X) = 0.82") 
+	    #--------------------------------------------------------------
+		annotate!(4.0, 0.85, text(L"g(\hat x) = g(mode(X)) = 0.82", annotateFontSize))
 	#------------------------------------------------------------------------------
 	pl7 =   # 3rd tentative PDF f_Y SkewNormal
 		let x0 = [mean(randomYs), std(randomYs), 0.0]        # initials for Nelder
 			result = optimize(negLogLikelihood, x0, NelderMead())
 	        ξ, ω, α = Optim.minimizer(result)
+			pdfSkewNormals =  pdf.(SkewNormal(ξ, ω, α), ys)
+			argmaxpdfSkewNormals = ys[argmax(pdfSkewNormals)]
 			println("ξ (location) = ", ξ)
 			println("ω (scale)    = ", ω)
 			println("α (shape)    = ", α)
+			modeY_Guess = argmaxpdfSkewNormals
+			println("modeY_Guess  = ", modeY_Guess)
+			#-----------------------------------------------------------------------
 			plot(size=size, title=L"f_{3Y}(y) = SkewNormal(\hat ξ, \hat ω, \hat α)", titlefontsize=titlefontsize, linewidth=linewidth,
 				 ys, pdf.(SkewNormal(ξ, ω, α), ys), permute =(:x, :y), color=:orange, label=L"f_{3Y}(y) = SkewNormal(\hat ξ, \hat ω, \hat α)")
+			#--------------------------------------------------------------
+			# mode marker line: horizontal from logistic sigmoid to modeY_Guess
+			plot!([modeX, 0.0], [modeY_Guess, modeY_Guess], ls =:dash, lw=linewidth-1, color=:orange, label=false)	
+			#--------------------------------------------------------------
+			plot!([0.0], [modeY_Guess], marker=:diamond, color=:orange, markersize=markersize, label=L"guessed\ mode(Y) = 0.94")
+			#--------------------------------------------------------------
+			annotate!(3.5, 0.96, text(L"\hat y = guessed\ mode(Y)) = 0.94", annotateFontSize))
+			#-----------------------------------------------------------------------
 		end # let
 	#------------------------------------------------------------------------------
 	plot(pl6, pl7, layout=(1,2), ylimits=(0.0, 1.0))
@@ -396,7 +422,6 @@ However, the mathematical *correct* approach to transfom the *pdf* $f_X$ in the 
 
 # ╔═╡ 6725f185-e8a0-466b-84dd-531bc8a8c4c9
 function murphy2023_BookII_Fig2Dot12_2()
-	modeY    = g(modeX)
 	randomXs = randn(10^5).+ modeX
 	randomYs = g.(randomXs)
 	σY       = std(randomYs)
@@ -407,7 +432,7 @@ function murphy2023_BookII_Fig2Dot12_2()
 	legendfontsize   = 11
 	annotateFontSize = 15
 	size             = (1000, 800)
-	linewidth        = 4
+	linewidth        =  4
 	markersize       = 14
 	#-------------------------------------------------------------------------------
 	function negLogLikelihood(params)
@@ -519,23 +544,25 @@ $\left|(g^{-1})'(y)\right|$ can be regarded as a *stretching* or *correction* fa
 
 The symbolic *derivative* $(g^{-1})'(y)$ is
 
-$(g^{-1})'(y) = \frac{dg^{-1}(y)}{dy} = \frac{d \ln\left(\frac{y}{1 - Y}\right) + 5}{dy} = \frac{1}{y-y^2}$
+$(g^{-1})'(y) = \frac{dg^{-1}(y)}{dy} = \frac{d \ln\left(\frac{y}{1 - Y}\right) + 5}{dy} = \frac{1}{y-y^2} = \frac{1}{y(1-y)}$
 
 so that the *transformed* density $f_Y(y)$ for the *logistic-logit* case is
 
-$f_Y(y) = f_X(g^{-1}(y)) \cdot \left|\frac{1}{y-y^2}\right| =$
-$=N\left(X=g^{-1}(y); μ_X=\hat x, \sigma_X=1\right)\cdot \left|\frac{1}{y-y^2}\right|.$
+$f_Y(y) = f_X(g^{-1}(y)) \cdot \left|\frac{1}{y(1-y)}\right| =$
+$=N\left(X=g^{-1}(y); μ_X=\hat x, \sigma_X=1\right)\cdot \left|\frac{1}{y(1-y)}\right|$
+
+$\text{with } y \in (0,1).$
 
 The Julia code including the *broadcasting* operator '$.$' is
 
 $σX = 1$
-$f_Y(y) := pdf.(Normal(modeX, σX), gInv.(ys)) .* abs.(1.0 ./(ys .- ys.^2)).$
+$f_Y(y) := pdf.(Normal(modeX, σX), gInv.(ys)) .* abs.(1.0 ./(ys.*(1.0 .- ys))).$
 
-We plot $f_Y(y)$ in its *rudimentary* form $f_{4Y}(y)$ *without* the *correction* factor $\left|\frac{1}{y-y^2}\right|$ (left, below) and in its *complete* form $f_Y(y)$ *including* it (right, below). 
+We plot $f_Y(y)$ in its *rudimentary* form $f_{4Y}(y)$ *without* the *correction* factor $\left|\frac{1}{y(1-y)}\right|$ (left, below) and in its *complete* form $f_Y(y)$ *including* it (right, below). 
 
 The short hand for term $f_X(g^{-1}(y);μ_X, σ_X)$ is *term c*.
 
-It is clear that only the *complete* form, including the *correction factor* $\left|\frac{1}{y-y^2}\right|$, fits the *pmf* $p_Y$ perfectly.
+It is clear that only the *complete* form, including the *correction factor* $\left|\frac{1}{y(1-y)}\right|$, fits the *pmf* $p_Y$ perfectly.
 
 "
 
@@ -545,40 +572,64 @@ fX_gInv(ys) = pdf.(Normal(modeX, σX), gInv.(ys))  # density excl. correction fa
 
 # ╔═╡ a679883f-c97c-41f4-8333-41b0b998099b
 # f_Y(y) including correction factor              # density incl. correction factor
-fY(ys) = pdf.(Normal(modeX, σX), gInv.(ys)) .* abs.(1.0 ./(ys .- ys.^2))
+fY(ys) = pdf.(Normal(modeX, σX), gInv.(ys)) .* abs.(1.0 ./(ys.*(1.0 .- ys)))
 
 # ╔═╡ be819c32-d007-4547-91b0-8b1a29f6752f
 let	randomXs         = randn(nSamples).+ modeX
 	randomYs         = g.(randomXs)
 	titlefontsize    = 11
-	annotateFontSize = 12
-	legendfontsize   = 11
-	linewidth        = 3
+	annotateFontSize = 10
+	legendfontsize   = 10
+	markersize       =  5
+	linewidth        =  3
 	size             = (600, 375)
 	#------------------------------------------------------------------------------
 	pl8 = 
 		let # histogram of p_Y(Y; μ_Y, σ_Y)
 			histogram(randomYs, normalize=:true, permute=(:y, :x), size=size,	color=:deepskyblue, label=L"pmf\ p_Y(y; μ_Y, σ_Y)")
-			annotate!(1.8, 0.62, text(L"p_Y", annotateFontSize))
+			#--------------------------------------------------------------
+			annotate!(1.8, 0.62, text(L"pmf\ p_Y", annotateFontSize))
 			#----------------------------------------------------------------------
 			# density guess f_{4Y}(y)=f_X(g^{-1}(y);μ_X, σ_X)
 			plot!(title=L"c):f_{4Y}(y)=f_X(g^{-1}(y);μ_X, σ_X)", titlefontsize=titlefontsize, 
 			ys, fX_gInv(ys), xlabel=L"Y\ \ (=P)", ylabel=L"X",
 			permute=(:y, :x), color=:blueviolet, linewidth=linewidth, legendfontsize=legendfontsize, label=L"c: f_{4Y}(y)")
+			#--------------------------------------------------------------
 			annotate!(0.5, 0.14, text(L"f_{4Y}(y)", annotateFontSize))
-			#----------------------------------------------------------------------
+			#--------------------------------------------------------------
+			# mode marker line: horizontal from logistic sigmoid to modeY
+			plot!([modeX, 0.0], [modeY, modeY], ls =:dash, lw=linewidth-1, color=:orange, label=false)	
+	    	#--------------------------------------------------------------
+			plot!([0.0], [g(modeX)], marker=:diamond, color=:orange, markersize=markersize, label=L"naive\ g(\hat X) = 0.82") 
+	    	#--------------------------------------------------------------
+			annotate!(4.0, 0.85, text(L"g(\hat x) = g(mode(X)) = 0.82", annotateFontSize))
 		end # let
 	#------------------------------------------------------------------------------
 	pl9 = 
-		let # histogram of p_Y(Y; μ_Y, σ_Y)
+		let argmax_fYs = ys[argmax(fY.(y2s))]
+			modeY_estim = argmax_fYs
+			println("modeY_estim = ", modeY_estim)
+			#---------------------------------------------------
+			# histogram of p_Y(Y; μ_Y, σ_Y)
 			histogram(randomYs, normalize=:true, permute=(:y, :x), size=size, color=:deepskyblue, label=L"pmf\ p_Y(y; μ_Y, σ_Y)")
+			#---------------------------------------------------
 			annotate!(1.8, 0.62, text(L"p_Y", annotateFontSize))
 			#----------------------------------------------------------------------
-			# density f_Y(y)=f_X(g^{-1}(y);μ_X, σ_X)\left|\frac{1}{y-y^2}\right|
-			plot!(title=L"f_Y(y)=f_X(g^{-1}(y);μ_X, σ_X)\left|\frac{1}{y-y^2}\right|", titlefontsize=titlefontsize, 
+			# density f_Y(y)=f_X(g^{-1}(pmf\ y);μ_X, σ_X)\left|\frac{1}{y(1-y)}\right|
+			plot!(title=L"f_Y(y)=f_X(g^{-1}(y);μ_X, σ_X)\left|\frac{1}{y(1-y)}\right|", titlefontsize=titlefontsize-1, 
 			ys, fY(ys), xlabel=L"Y\ \ (=P)", ylabel=L"X",
-			permute=(:y, :x), color=:red, linewidth=linewidth, legendfontsize=legendfontsize, label=L"f_Y(y)")			
+			permute=(:y, :x), color=:red, linewidth=linewidth, legendfontsize=legendfontsize, label=L"f_Y(y)")	
+			#--------------------------------------------------------------
+			annotate!(3.2, 0.78, text(L"f_{Y}(y)", annotateFontSize))
 			annotate!(0.5, 0.14, text(L"f_{Y}(y)", annotateFontSize))
+			#--------------------------------------------------------------
+			# mode marker line: horizontal from logistic sigmoid to modeY
+			plot!([modeX, 0.0], [modeY_estim, modeY_estim], ls =:dash, lw=linewidth-1, color=:red, label=false)	
+			#--------------------------------------------------------------
+			plot!([0.0], [modeY_estim], marker=:diamond, color=:red, markersize=markersize, label=L"estim.\ \hat y = 0.90") 
+			#--------------------------------------------------------------
+			annotate!(3.8, 0.92, text(L"estim.\ \hat y = mode(Y) = 0.90", annotateFontSize))
+	    	#--------------------------------------------------------------
 		end # let
 	#------------------------------------------------------------------------------
 	plot(pl8, pl9, layout=(1,2))
@@ -642,7 +693,7 @@ function Bishop2023_DLFig2Dot122()
 	# PDFs
 	gaussNX     = Normal(modeX, 1)                   # standard Gaussian N(x;0,1)
 	σY          = std(randomYs)
-	println("σY = ", σY)
+	println("σY           = ", σY)
 	gaussNY     = Normal(modeY, σY)
 	pdfsGaussNX = pdf.(gaussNX, xs)                  # densities of Gaussian X
 	pdfsGaussNY = pdf.(gaussNY, ys) 
@@ -732,35 +783,36 @@ Both *transformation-free* methods display the same *mode* $\hat y = 0.91$.
 "
 
 # ╔═╡ caf643bd-4b8f-4281-9c70-5907451c1790
-let ys       =   0.02:Δy:0.98
-	xs       = -85.0:Δx:4.0
-	x2s      =   0.0:Δx:4.0
-	titlefontsize    = 12
+let ys = y2s
+	titlefontsize    = 11
 	annotateFontSize = 10
 	legendfontsize   = 10
-	linewidth = 2
+	linewidth        =  2
 	#-------------------------------------------------------------------------------
 	pl1 = plot(title=L"transfomed\;\;density\ f_Y(y)", titlefontsize=titlefontsize,  color=:red, linewidth=linewidth, permute=(:x, :y),
-			   ys, fY(ys), legendfontsize=legendfontsize, label=false)
-	#
-	plot!(x2s, x -> ys[argmax(fY.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"\hat y = ys\left[argmax(fY)\right] = 0.91")
-	#
-	println("mode(Y) = ys[argmax(fY.(ys))] = ", ys[argmax(fY.(ys))])
-	println("fY(ys[argmax(fY.(ys))])       = ", fY(ys[argmax(fY.(ys))]))
-	#
-	annotate!(1.9, 0.93, text(L"\hat y = ys[argmax(f_Y.(ys)]       = 0.91", annotateFontSize))
+			   y2s, fY(y2s), legendfontsize=legendfontsize, label=false)
+		#-----------------------------------------------------------
+		plot!(x2s, x -> ys[argmax(fY.(y2s))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"\hat y = ys\left[argmax(fY)\right] = 0.91")
+		#-----------------------------------------------------------
+	    # println("y2s = ", y2s)
+	    # println("fY.(y2s)                       = ", fY.(y2s))
+	    # println("length(y2s)                    = ", length(y2s))
+		println("argmax(fY.(y2s))               = ", argmax(fY.(y2s)))
+		println("mode(Y) = ys[argmax(fY.(y2s))] = ", ys[argmax(fY.(y2s))])
+		#-----------------------------------------------------------
+		annotate!(1.9, 0.93, text(L"\hat y = ys[argmax(f_Y.(ys)]       = 0.91", annotateFontSize))
 	#-------------------------------------------------------------------------------
 	pl2 = plot(title=L"derivative\ of\ density\ f'_Y(y)", 		    titlefontsize=titlefontsize, label=false, linewidth=linewidth,
 			ys, fYD.(ys), legendfontsize=legendfontsize, color=:magenta, permute=(:x, :y))
-	#
-	plot!(xs, x -> ys[argmax(fY.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"\hat y = ys\left[argmax(fY)\right] = 0.91")
-	#
-	plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linewidth=linewidth-1, linestyle=:dash, label=L"f'_Y(y) = 0")
-	#
-	annotate!(-43.0, 0.93, text(L"\hat y = ys[argmax(f_Y.(ys)] = 0.91", annotateFontSize))
-	# ==> 0 --> :)
-	println("fYD(ys[argmax(fY.(ys))])      = ", fYD(ys[argmax(fY.(ys))]))            
-	println("gInv(ys[argmax(fY.(ys))])     = ", gInv(ys[argmax(fY.(ys))])) 
+		#
+		plot!(x3s, x -> ys[argmax(fY.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"\hat y = ys\left[argmax(fY)\right] = 0.91")
+		#
+		plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linewidth=linewidth-1, linestyle=:dash, label=L"f'_Y(y) = 0")
+		#
+		annotate!(-38.0, 0.93, text(L"\hat y = ys[argmax(f_Y.(ys)] = 0.91", annotateFontSize))
+		# ==> 0 --> :)
+		println("fYD(ys[argmax(fY.(ys))])       = ", fYD(ys[argmax(fY.(ys))]))       
+		println("gInv(ys[argmax(fY.(ys))])      = ", gInv(ys[argmax(fY.(ys))])) 
 		                                                          # ==> 7.31 --> :(
 	#-------------------------------------------------------------------------------
 	plot(pl1, pl2, layout=(1, 2))
@@ -827,10 +879,10 @@ function Bishop2023_DLFig2Dot123()
 	annotate!(4.9, 0.85, text(L"g(\hat x) = g(mode(X)) = 0.82", annotateFontSize))
 	#-------------------------------------------------------------------------------
 	# new marker line:
-	plot!([0.0, modeX], [ys[argmax(fY.(ys))], ys[argmax(fY.(ys))]], linewidth=linewidth-1.5, ls=:dash, color=:orangered2, label=L"mode(Y) = \hat y = argmax(fY.(ys)) = 0.91")
-	println("mode(Y)      = argmax(fY.(ys)) = ", ys[argmax(fY.(ys))])
+	plot!([0.0, modeX], [ys[argmax(fY.(ys))], ys[argmax(fY.(ys))]], linewidth=linewidth-1.5, ls=:dash, color=:orangered2, label=L"mode(Y) = \hat y = ys[argmax(fY.(ys))] = 0.91")
+	println("mode(Y)      = ys[argmax(fY.(ys))]     = ", ys[argmax(fY.(ys))])
 	println("fY(mode(Y))  = fY(ys[argmax(fY.(ys))]) = ", fY(ys[argmax(fY.(ys))]))
-	annotate!(5.2, 0.94, text(L"\hat y = mode(Y) = 0.91", annotateFontSize))
+	annotate!(5.3, 0.94, text(L"\hat y = mode(Y) = 0.91", annotateFontSize))
 	#-------------------------------------------------------------------------------
 	# mode markers
 	plot!([modeX], [0.0], marker=:diamond, color=:red, markersize=markersize, label=L"mode(X)=6.5")                                                  # modeX 
@@ -840,7 +892,7 @@ function Bishop2023_DLFig2Dot123()
 	# PDFs
 	gaussNX     = Normal(modeX, 1)                   # standard Gaussian N(x;0,1)
 	σY          = std(randomYs)
-	println("σY = ", σY)
+	println("σY           = ", σY)
 	gaussNY     = Normal(modeY, σY)
 	pdfsGaussNX = pdf.(gaussNX, xs)                  # densities of Gaussian X
 	pdfsGaussNY = pdf.(gaussNY, ys) 
@@ -875,223 +927,16 @@ end # Bishop2023_DLFig2Dot123()
 # ╔═╡ e779b696-5f18-46b0-89ac-50629dd149bd
 Bishop2023_DLFig2Dot123()
 
-# ╔═╡ 4c522ae1-16a7-463c-8366-427fb299af69
-md"
----
-###### 3.13 The Symbolic Derivative of $\frac{d}{dy}f_Y(y) =f'_Y(y)$
-In 3.1 (cf. DLFC, (2.72)) we argued that *simple* transformations $\hat y = g(\hat x), \hat x = g^{-1}(\hat y)$ are correct *only if* $f_X(x), f_Y(y)$ were *differentiable, unconstrained* functions. This is *not* true for *densities*. These are constrained to *nonnegative* values (= *1st* constraint) and $\int f(x) dx = 1$ (= *2nd* constraint).
-
-Instead we derived for the computation of *mode* $\hat y$ *transformation-free* alternatives either by appliction of $argmax(f_Y(y))$ or by solving for the *root* of the *zero-set* derivative $f'_Y(y) = 0$. In both cases we used *numerical* algorithms and got the correct value for *mode* $\hat y = 0.91$.
-
-[Bishop & Bishop (2024, p. 43)](https://www.bishopbook.com/) prefer to present the *correction factor* (= *Jacobian*) in the transformation $(DLFC, (2.71))$ *symbolically*. We try to elaborate their ideas as far as possible within *Julia* graphics.
-
-We start with the transform of the density $f_X(x)$ in 3.1:
-
-$f_Y(y) = f_X(g^{-1}(y))\left|(g^{-1})'(y)\right|\tag{cf. DLFC, (2.71)}.$
-
-Then we'll find the *derivative* $f'_Y(y)$:
-
-$f'_Y(y) = \frac{d}{dy}(f_X(g^{-1}(y))|(g^{-1})'(y)|)=$
-
-$=\frac{(g^{-1})'(y)\left((g^{-1})'(y)^2f_X'(g^{-1}(y)) + f_X(g^{-1})(y)(g^{-1})''(y)\right)}{|(g^{-1})'(y)|}=$
-
-$=\frac{(g^{-1})'(y)}{|(g^{-1})'(y)|}\cdot\left((g^{-1})'(y)^2 \cdot f_X'((g^{-1})(y)) + f_X(g^{-1})(y) \cdot (g^{-1})''(y)\right).$
-
-We abbreviate
-
-$s(y) = \frac{(g^{-1})'(y)}{|(g^{-1})'(y)|}.$
-
-This is for our case
-
-$\forall y \in [0, 1]:s(y) = 1.$
-
-The *derivative* simplifies to
-
-$f'_Y(y) = (g^{-1})'(y)^2f_X'((g^{-1})(y)) + f_X((g^{-1})(y))(g^{-1})''(y).$
-
-If we reorder terms within brackets
-
-$f'_Y(y) = \tag{cf. DLFC, (2.73)}$
-$= f_X'(g^{-1}(y)) \cdot (g^{-1})'(y)^2 + f_X(g^{-1}(y))\cdot (g^{-1})''(y).$
-
-this expression is apart from minor differences in spelling virtually identical to *Bishop & Bishop*'s (*DLFC, (2.73)*).
-
-"
-
-# ╔═╡ e991a48d-5d63-4891-99bb-51d29cfd03e6
-md"
----
-###### 3.14 Translation of the Symbolic Derivative of $\frac{d}{dy}f_Y(y) =f'_Y(y)$ into Julia
-
-For bookkeeping purposes we denote the various factors of $f'_Y(y)$ with letters $a...d$. The correctness of the *symbolic* derivatives were crosschecked with [*Wolfram Alpha*](https://www.wolframalpha.com/).
-
-$f'_Y(y) = \tag{cf. DLFC, (2.73)}$
-$= f_X'(g^{-1}(y)) \cdot (g^{-1})'(y)^2 + f_X(g^{-1}(y))\cdot (g^{-1})''(y)=$
-$= a\cdot b^2 + c \cdot d.$
-
-where:
-
-$a=f'_X(g^{-1}(y))  := fXD\_gInv(y),$
-
-$b = (g^{-1})'(y) = \begin{cases}
-b_1:= gInvD\_Symb(y) = \frac{1}{y - y^2},  & \text{if symbolic} \\
-b_2:= gInvD\_Num(y), & \text{if numeric}
-\end{cases}$
-
-$c=f_X(g^{-1})(y)   := fX\_gInv(y)$
-
-$d = (g^{-1})''(y) = \begin{cases}
-d_1 := gInvDD\_Symb(y) = \frac{2y-1}{(y-1)^2y^2},  & \text{if symbolic} \\
-d_2 := gInvDD\_Num(y). & \text{if numeric}
-\end{cases}$
- 
-It had be shown that in the context of *pdf*s
-
-$\hat y ≠ g(\hat x)\text{ and } \hat x ≠ g^{-1}(\hat y).$ 
-
-For the two *modes* $\hat x, \hat y$ both *derivatives* $f_X'(\hat x) = f'_Y(\hat y) = 0$ have to be *zero*. Under this assumption the relation between the *derivatives* can be described by these *implications*:
-
-$f_X'(\hat x) = 0 \Rightarrow f'_Y(g(\hat x)) \neq 0,$
-$f'_Y(\hat y) = 0 \Rightarrow f'_X(g^{-1}(\hat y)) \neq 0.$ 
-
-The *simple* deviation $a - 0 = a$ or its *weighted* counterpart $a \cdot b^2 - 0 = a \cdot b^2$ are controlled or corrected by the second summand $c \cdot d$ in $f'_Y(y).$ The second summand disapears when the transformation function $g(.)$ is *linear*. For *linear* $g, g^{-1}$functions the second derivatives $g'', (g^{-1})''$ are *zero*.
-
-"
-
-# ╔═╡ 41b1196e-9f0a-4398-b5af-f442c0be2715
-begin # the components of f'_Y(y) := fYD(y) are:
-	#--------------------------------------------------------------------------------
-	fXD_gInv(y)    = ForwardDiff.derivative(fX_gInv, y) # a  = numeric derivative
-	#--------------------------------------------------------------------------------
-	gInvD_Symb(y)  = 1.0/(y - y^2)                      # b1(symbolic)=(g^{-1})'(y)
-	gInvD_Num(y)   = ForwardDiff.derivative(gInv, y)    # b2(numeric) =(g^{-1})'(y)
-	#--------------------------------------------------------------------------------
-	# fX_gInv                                           # c  = f_X(g^{-1})(y)
-	#--------------------------------------------------------------------------------
-	gInvDD_Symb(y) = (2.0*y - 1)/((y - 1.0)^2*y^2)      # d1(symbol.)=(g^{-1})''(y)
-	gInvDD_Num(y)  = 
-		ForwardDiff.derivative(gInvD_Num, y)            # d2(numeric)=(g^{-1})''(y)
-	#--------------------------------------------------------------------------------
-end # begin
-
-# ╔═╡ e60fb090-ea7b-4f27-8bb3-e4d9704f09d3
-md"
----
-###### 3.15 Intermediate Plotting Results: Transformed *Density* $f_Y(y)$ (*pl1*), its *Derivative* $f'_Y(y)$ (*pl2*), and others (*pl3-pl8*)
-
-Now, we plot $f'_Y(y)$ and some of its components:
-
-- *pl1*: density $f_Y(y)$
-- *pl2*: derivative $f'_Y(y)$
-- *pl3*: logit transform $g^{-1}(y)$ or $|g^{-1}(y)|$
-- *pl4*: $\frac{g^{-1}(y)}{|g^{-1}(y)|}=1$
-- *pl5*: derivative $b = (g^{-1})'(y)$
-- *pl6*: square of derivative $b^2 = (g^{-1})'(y)^2$
-- *pl7*: density $c=f_X(g^{-1}(y))$, derivative $a=f'_X(g^{-1}(y))$
-- *pl8*: second order derivative $d = (g^{-1})''(y)$
-- *pl9*: plot of $a \cdot b^2$ vs plot $c \cdot d$
-
-For $f'_Y(y)$ the following components are *necessary* 
-
-- term $a := gInvDD_Symb.(ys)$ in *pl8*
-- term $b^2$ in *pl6*
-- term $c$ in *pl7*
-- term $d$ in *pl8*.
-
-"
-
-# ╔═╡ d9b644a4-c59e-40e7-beb3-d7aedf5c2a1e
-function derivatives()
-	xs               = -85.0:Δx:15.0
-	x2s              = -4.0:Δx:4.0
-	ys               = 0.02:Δy:0.98
-	#------------------------------------
-	titlefontsize    = 12
-	xlimits          = (0.0, 10.5)
-	ylimits          = (-0.001, 1.5)
-	guidefontsize    = 18
-	legendfontsize   = 11
-	annotateFontSize = 10
-	size             = (1000, 800)
-	linewidth        = 2.0
-	markersize       = 14
-	#--------------------------------------------------------------------------------
-	# derivative f'_Y(y) = f'_Y(g^{-1}(y)
-	fYD(y)           = ForwardDiff.derivative(fY, y)     # numeric derivative
-	#--------------------------------------------------------------------------------
-	s(y)             = gInvD_Symb(y)/abs(gInvD_Symb(y))  # *** where used ??? ***
-	#-===============================================================================
-	# pl1
-	pl1 = plot(title=L"pl1:\ density\ f_Y(y) := fY.(ys)", titlefontsize=titlefontsize,  permute=(:x, :y), linewidth=linewidth+1, legendfontsize=legendfontsize,
-	ylimits=(-1.0, 4.0),
-	ys, fY.(ys), color=:red, label=L"pl1:density\ f_Y(y)", xlabel=L"Y", ylabel=L"f_Y(y)")
-	#
-	plot!(x2s, x -> ys[argmax(fY.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"mode\ \hat y = argmax(fY(ys)) = 0.91")
-	#
-	annotate!(1.4, 0.93, text(L"mode\ \hat y = ys[argmax(fY.(ys))] = 0.91", annotateFontSize))
-	#--------------------------------------------------------------------------------
-	# pl2
-	pl2 = plot(title=L"pl2:\ derivative\ f'_Y(y) := fYD.(ys)", 
-			ys, fYD.(ys), permute=(:x, :y), color=:magenta, 
-			xlimits=(-0.001, 1.01), 
-			titlefontsize=titlefontsize, legendfontsize=legendfontsize, 		   linewidth=linewidth, label=L"pl2:derivative\ f'_Y(y)", ylabel=L"f'_Y(y)", xlabel=L"Y")
-	#
-	plot!(xs, x -> ys[argmax(fY.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"mode\ \hat y = argmax(fY) = 0.91")
-	#
-	plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linewidth=linewidth-1, linestyle=:dash, label=L"constraint\ f'_Y(y)=0")
-	#
-	annotate!(-40, 0.93, text(L"mode\ \hat y = ys[argmax(fY.(ys)] = 0.91", annotateFontSize))
-	#-----------------------------------------------------------------------------
-	pl3 = 
-		plot(ys, gInv.(ys), title=L"pl3_1: g^{-1}(y), pl3_2: |g^{-1}(y)|", titlefontsize=titlefontsize, legendfontsize=legendfontsize, color=:orange, permute=(:x, :y), linewidth=linewidth+2, label=L"pl3_1 (=logit\ trafo): g^{-1}(y)", xlabel=L"Y", ylabel=L"X = g^{-1}(y), X = |g^{-1}(y)|")
-		#--------------------------------------------------------------------------
-		plot!(ys, abs.(gInv.(ys)), title=L"pl3_1: g^{-1}(y), pl3_2: |g^{-1}(y)|", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl3_2 (=|logit\ trafo|):\ |g^{-1}(y)| ")
-	#-----------------------------------------------------------------------------
-	pl4 = plot(ys, gInv.(ys)./abs.(gInv.(ys)), title=L"pl4:\forall y \in [0,1]:\frac{g^{-1}(y)}{|g^{-1}(y)|}=1", titlefontsize=titlefontsize, legendfontsize=legendfontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, ylabel=L"X = \frac{g^{-1}(y)}{|g^{-1}(y)|}", xlabel=L"Y",
-	label=L"pl4:\forall y \in [0,1]:\frac{g^{-1}(y)}{|g^{-1}(y)|} = 1")
-	#-----------------------------------------------------------------------------
-	pl5 = 
-		plot(ys, gInvD_Symb.(ys), color=:orange, permute=(:x, :y), linewidth=linewidth+2, legendfontsize=legendfontsize, label=L"pl5_1:\ symbol.deriv.\ b_1=(g^{-1})'(y)", xlabel=L"Y", ylabel=L"X = (g^{-1})'(y)")
-		#-------------------------------------------------------------------------
-		plot!(ys, gInvD_Num.(ys), title=L"pl5:\ derivative\ b =(g^{-1})'(y)", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl5_2:\ numer.deriv.\ b_2=(g^{-1})'(y)")
-	#-----------------------------------------------------------------------------
-	pl6 = 
-		plot(ys, (gInvD_Symb.(ys)).^2, color=:orange, permute=(:x, :y), linewidth=linewidth+2, legendfontsize=legendfontsize, label=L"pl6_1:\ symbol.deriv.\ b_1^2=(g^{-1})'(y)^2", xlabel=L"Y", ylabel=L"X = (g^{-1})'(y)^2")
-		#-------------------------------------------------------------------------
-		plot!(ys, (gInvD_Num.(ys)).^2, title=L"pl6:\ derivative\ b^2=(g^{-1})'(y)^2", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl6_2:\ numer.deriv.\ b_2^2=(g^{-1})'(y)^2")
-	#-----------------------------------------------------------------------------
-	pl7 = 
-		plot(ys, fX_gInv(ys), permute=(:x, :y), color=:blueviolet, linewidth=linewidth+1, legendfontsize=legendfontsize, label = L"pl7:\ density:\ c = f_X(g^{-1}(y))")
-		#------------------------------------------------------------------------
-		plot!(ys, fXD_gInv.(ys), title=L"pl7:c=f_X(g^{-1}(y)), a=f'_X(g^{-1}(y))", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth-1, label=L"pl7:\ derivative\ a = f'_X(g^{-1}(y))", xlabel=L"Y", ylabel=L"X = f_X(g^{-1}(y)), X = f'_X(g^{-1}(y))")
-		#
-		plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linewidth=linewidth-1, linestyle=:dash, label=L"constraint\ f'_X(g^{-1}(y)) = 0")
-	    #
-		plot!(x2s, x -> ys[argmax(fX_gInv.(ys))], linewidth=linewidth-1, color=:blueviolet, linestyle=:dash, label=L"naive\ \hat y = argmax(fX\_gInv.(ys)) = 0.82")
-		#
-		annotate!(0.0, 0.84, text(L"naive.mode\ \hat y = ys[argmax(fY.(ys))] = 0.82", annotateFontSize))
-	#-----------------------------------------------------------------------------
-	pl8 = 
-		plot(ys, gInvDD_Symb.(ys), color=:orange, permute=(:x, :y), linewidth=linewidth+2, legendfontsize=legendfontsize, label=L"pl8_1:\ symbol.deriv.\ d_1=(g^{-1})''(y)", xlabel=L"Y", ylabel=L"X = d = (g^{-1})''(y)")
-		#-------------------------------------------------------------------------
-		plot!(ys, gInvDD_Num.(ys), title=L"pl8:\ derivative\ d=(g^{-1})''(y)", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl8_2:\ numer.deriv.\ d_2=(g^{-1})''(y)")
-	#-----------------------------------------------------------------------------
-	plot(pl1, pl2, pl3, pl4, pl5, pl6, pl7, pl8, layout=(4, 2), size=(800, 2000))
-end # function derivatives()
-
-# ╔═╡ a2aa8846-e540-4403-9da9-ad12b0622859
-derivatives()
-
 # ╔═╡ 34390199-86bc-4d48-a91c-2d5847fbabf9
 md"
 ---
-###### 3.16 Densities *before* Correction $f_X(g^{-1}(y)$ and *after* $f_Y(y)$ Correction with $\left|(g^{-1})'(y)\right|$
+###### 3.13 Densities *before* Correction $f_X(g^{-1}(y)$ and *after* $f_Y(y)$ Correction with $\left|(g^{-1})'(y)\right|$
 
 The following plot displays the *densities*, *derivatives* of *density*, the *uncorrected (= naive)*, and the *corrected (= true)* $mode(Y) = \hat y$:
 
 - *before* the correction 
-$density\ c = f_X(g^{-1}(y)) := fX\_gInv(y)\;;\text{ color=:blueviolet, lw=3.5}$
-$derivative \text{ of density } a = f'_X(g^{-1}(y)) := fXD\_gInv.(ys)\;;\text{ color=:blueviolet, lw=1.5}$
+$density\ c = f_X(g^{-1}(y)) := fX\_gInv(y)\;;\text{ :blueviolet, linewidth=3.5}$
+$derivative \text{ of density } a = f'_X(g^{-1}(y)) := fXD\_gInv.(ys)\;;\text{ :blueviolet, linewidth=1.5}$
 $\text{uncorr. } (= naive )\ mode\ \hat y = g(mode(X)) = argmax(f_X(g^{-1}.(ys))\;;\text{ :blueviolet, :dash}$
 
 - *after* the correction
@@ -1109,16 +954,122 @@ $g^{-1}(mode(Y)_{corrected}) = 7.314 > mode(X) = \hat x = 6.516.$
 "
 
 # ╔═╡ fc82f0f5-d850-44f9-9726-9bccea28df3f
-logisticSigmoid(6.5)                     # ==> g(mode(X)) = 0.81 < mode(Y)
+logisticSigmoid(6.5)               # ==> naive mode(Y) = g(mode(X)) = 0.81 < mode(Y)
 
 # ╔═╡ d952f790-749c-48d0-a562-4e90393f0d65
-gInv(0.82)                               # ==> g^{-1}(g(mode(X))) = 6.516 --> :)
+gInv(0.82)                         # ==> g^{-1}(g(mode(X))) = 6.516 --> :)
 
 # ╔═╡ 6be4a020-234c-4600-a7fa-84ed6504718a
-abs(gInv(0.82) - modeX)                  # ==> 0.016 --> :)
+abs(gInv(0.82) - modeX)            # ==> 0.016 --> :)
 
 # ╔═╡ f9053506-b821-41d8-82a1-fc71a01b6d45
-gInv(0.91)                               # ==> g^{-1}(mode(Y)) = 7.314 > 6.5 --> :(
+gInv(0.91)                         # ==> g^{-1}(mode(Y)) = 7.314 > 6.5 --> :(
+
+# ╔═╡ 4c522ae1-16a7-463c-8366-427fb299af69
+md"
+---
+###### 3.14 The Symbolic Derivative of $f'_Y(y)$
+In 3.1 (cf. DLFC, (2.72)) we argued that *simple* transformations $\hat y = g(\hat x), \hat x = g^{-1}(\hat y)$ are correct *only if* $f_X(x), f_Y(y)$ were *differentiable, unconstrained* functions. This is *not* true for *densities*. These are constrained to *nonnegative* values (= *1st* constraint) and $\int f(x) dx = 1$ (= *2nd* constraint).
+
+Instead we derived for the computation of $mode(Y)=\hat y$ *transformation-free* alternatives either by evaluation of $ys[argmax(f_Y.(ys))]$ or by solving for the *root* of the *zero-set* derivative $f'_Y(y) = 0$. In both cases we used *numerical* algorithms and got the correct value for *mode* $\hat y = 0.91$.
+
+[Bishop & Bishop (2024, p. 43)](https://www.bishopbook.com/) prefer to present the *correction factor* (= *Jacobian*) in the transformation $(DLFC, (2.71))$ *symbolically*. We try to elaborate their ideas with a combined *symbolic-numeric* approach: first *symbolic* then *numeric* with *Julia* graphics.
+
+We start with the transform of the density $f_X(x)$ in 3.1:
+
+$f_Y(y) = f_X(g^{-1}(y))\left|(g^{-1})'(y)\right|\tag{cf. DLFC, (2.71)}.$
+
+Then we'll find the *derivative* $f'_Y(y)$:
+
+$f'_Y(y) = \frac{d}{dy}(f_X(g^{-1}(y))|(g^{-1})'(y)|)=$
+
+after applying *product* and *chain rule*:
+
+$\frac{d}{dy}f_Y(y) = f'_Y(y) = f'_X(g^{-1}(y))(g^{-1})'(y)|(g^{-1})'(y)| + f_X(g^{-1}(y))\cdot \frac{d}{dy}|(g^{-1})'(y)|.$
+
+For $(g^{-1})'(y) \neq 0$ the following holds:
+
+$\frac{d}{dy} |(g^{-1})'(y)| = sgn((g^{-1})'(y)) \cdot (g^{-1})''(y)),$
+
+and
+
+$f'_Y(y) =$
+$= f'_X(g^{-1}(y)) \cdot (g^{-1})'(y)\cdot|(g^{-1})'(y)| + f_X(g^{-1}(y))\cdot sgn((g^{-1})'(y)) \cdot (g^{-1})''(y)).$
+
+If $g^{-1}(y)$ is strictly *monotonically increasing*, then $(g^{-1})'(y) > 0$ and 
+
+$f'_Y(y) = f'_X(g^{-1}(y))\cdot((g^{-1})'(y))^2 + f_X(g^{-1}(y))\cdot(g^{-1})''(y).$
+
+If $g^{-1}(y)$ is strictly *monotonically decreasing*, then $(g^{-1})'(y) < 0$ and 
+
+$f'_Y(y) = - f'_X(g^{-1}(y))\cdot((g^{-1})'(y))^2 - f_X(g^{-1}(y))\cdot(g^{-1})''(y).$
+
+The latter two expressions can be combined to a single expression. This is apart from minor differences in spelling virtually identical to *Bishop & Bishop*'s (*DLFC, (2.73)*):
+
+$f'_Y(y) =\tag{cf. DLFC, (2.73)}$
+$=s\left[f'_X(g^{-1}(y))((g^{-1})'(y))^2 + f_X(g^{-1}(y)) (g^{-1})''(y)\right]$
+
+with
+
+$s = \{-1, +1\}.$
+
+"
+
+# ╔═╡ e991a48d-5d63-4891-99bb-51d29cfd03e6
+md"
+---
+###### 3.15 Binding Terms of the Symbolic Derivative of $\frac{d}{dy}f_Y(y) = f'_Y(y)$ with Julian Functions
+
+For bookkeeping purposes we denote the various factors of $f'_Y(y)$ with letters $a,b,c,d$. The correctness of the *symbolic* derivatives were crosschecked with [*Wolfram Alpha*](https://www.wolframalpha.com/).
+
+$f'_Y(y) = \tag{cf. DLFC, (2.73)}$
+$= f_X'(g^{-1}(y)) \cdot (g^{-1})'(y)^2 + f_X(g^{-1}(y))\cdot (g^{-1})''(y)=$
+$= a\cdot b^2 + c \cdot d\;;\text{ for } s=1.$
+
+where:
+
+$a=f'_X(g^{-1}(y))  := fXD\_gInv(y),$
+
+$b = (g^{-1})'(y) = \begin{cases}
+b_1:= gInvD\_Symb(y) = \frac{1}{y(1 - y)},  & \text{if symbolic} \\
+b_2:= gInvD\_Num(y), & \text{if numeric}
+\end{cases}$
+
+$c=f_X(g^{-1})(y)   := fX\_gInv(y)$
+
+$d = (g^{-1})''(y) = \begin{cases}
+d_1 := gInvDD\_Symb(y) = \frac{2y-1}{y^2(1 - y)^2},  & \text{if symbolic} \\
+d_2 := gInvDD\_Num(y). & \text{if numeric}
+\end{cases}$
+ 
+It had be shown that in the context of *pdf*s
+
+$\hat y ≠ g(\hat x)\text{ and } \hat x ≠ g^{-1}(\hat y).$ 
+
+For the two *modes* $\hat x, \hat y$ both *derivatives* $f_X'(\hat x) = f'_Y(\hat y) = 0$ have to be *zero*. Under this assumption the relation between the *derivatives* can be described by these *implications*:
+
+$f_X'(\hat x) = 0 \Rightarrow f'_Y(g(\hat x)) \neq 0,$
+$f'_Y(\hat y) = 0 \Rightarrow f'_X(g^{-1}(\hat y)) \neq 0.$ 
+
+The *simple* deviation $a - 0 = a$ or its *weighted* counterpart $a \cdot b^2 - 0 = a \cdot b^2$ are controlled or corrected by the second summand $c \cdot d$ in $f'_Y(y).$ The second summand disapears when the transformation function $g(.)$ is *linear*. For *linear* $g, g^{-1}$functions the second derivatives $g'', (g^{-1})''$ are *zero*.
+
+"
+
+# ╔═╡ 41b1196e-9f0a-4398-b5af-f442c0be2715
+begin # components of f'_Y(y) := fYD(y) are:
+	#--------------------------------------------------------------------------------
+	fXD_gInv(y)    = ForwardDiff.derivative(fX_gInv, y) # a  = numeric derivative
+	#--------------------------------------------------------------------------------
+	gInvD_Symb(y)  = 1.0/(y*(1 - y))                    # b1(symbolic)=(g^{-1})'(y)
+	gInvD_Num(y)   = ForwardDiff.derivative(gInv, y)    # b2(numeric) =(g^{-1})'(y)
+	#--------------------------------------------------------------------------------
+	# fX_gInv                                           # c  = f_X(g^{-1})(y)
+	#--------------------------------------------------------------------------------
+	gInvDD_Symb(y) = (2.0*y - 1)/(y^2*(1.0 - y)^2)      # d1(symbol.)=(g^{-1})''(y)
+	gInvDD_Num(y)  = 
+		ForwardDiff.derivative(gInvD_Num, y)            # d2(numeric)=(g^{-1})''(y)
+	#--------------------------------------------------------------------------------
+end # begin
 
 # ╔═╡ 9f52849a-621e-4e8e-a5a5-d711e301c617
 function densitiesBeforeAndAfterTransormation()
@@ -1160,12 +1111,164 @@ end # function densitiesBeforeAndAfterTransormation()
 # ╔═╡ 064fbc16-56d1-416e-90c0-24a60ebeaba0
 densitiesBeforeAndAfterTransormation()
 
+# ╔═╡ e60fb090-ea7b-4f27-8bb3-e4d9704f09d3
+md"
+---
+###### 3.16 Intermediate Plotting Results: Transformed *Density* $f_Y(y)$ (*pl1*), its *Derivative* $f'_Y(y)$ (*pl2*), and others (*pl3-pl8*)
+
+Now, we plot $f'_Y(y)$ and some of its components:
+
+- *pl1*: density $f_Y(y)$
+- *pl2*: derivative $f'_Y(y)$
+- *pl3*: logit transform $g^{-1}(y)$ or $|g^{-1}(y)|$
+- *pl4*: $\forall y \in [0, 1]:s(y) = \frac{g^{-1}(y)}{|g^{-1}(y)|}=1$
+- *pl5*: derivative $b = (g^{-1})'(y)$
+- *pl6*: square of derivative $b^2 = (g^{-1})'(y)^2$
+- *pl7*: density $c=f_X(g^{-1}(y))$, derivative $a=f'_X(g^{-1}(y))$
+- *pl8*: second order derivative $d = (g^{-1})''(y)$
+- *pl9*: plot of $a \cdot b^2$ vs plot $c \cdot d$
+
+For $f'_Y(y)$ the following components are *necessary* 
+
+- term $a$ in *pl7*
+- term $b^2$ in *pl6*
+- term $c$ in *pl7*
+- term $d$ in *pl8*.
+
+"
+
 # ╔═╡ 78581f63-cbf5-4ddc-adcd-a501548d43a7
 md"
 ---
-##### 2026/07/06
-The following contains errors !
+###### >>>> Error hint (2026/07/18) 
+The construction and coding of the *derivative* $fYD\_reconstructed(y)$ *below* is in error (!) as a comparison between *plots* $pl9$ and $pl10$ demonstrates. To make both graphs *similar* we had to *cut* $ys$ above and below by $n=12 * Δy$-steps.
 "
+
+# ╔═╡ d9b644a4-c59e-40e7-beb3-d7aedf5c2a1e
+function derivatives()
+	#--------------------------------------------------------------------------------
+	titlefontsize    = 12
+	xlimits          = (0.0, 10.5)
+	ylimits          = (-0.001, 1.5)
+	guidefontsize    = 18
+	legendfontsize   = 11
+	annotateFontSize = 10
+	size             = (1000, 1000)
+	linewidth        = 2.0
+	markersize       = 14
+	#--------------------------------------------------------------------------------
+	modeY            = y2s[argmax(fY.(y2s))]
+	println("modeY = ", y2s[argmax(fY.(y2s))])
+	#--------------------------------------------------------------------------------
+	# derivative f'_Y(y) = f'_Y(g^{-1}(y)
+	fYD(y)           = 
+		ForwardDiff.derivative(fY, y)                           # numeric derivative
+	#--------------------------------------------------------------------------------
+	# derivative f'_Y(y) = a * b^2 + c * d               ( reconstructed derivative)
+	fYD_reconstructed(y) = 
+		fXD_gInv(y) * gInvD_Num(y)^2 + fX_gInv(y) * gInvDD_Num(y)
+	#--------------------------------------------------------------------------------
+	# switch s: s = 1 for ys in [0, 1]
+	# *** used in symbolic derivative and plot pl4 ***
+	s(y)             = gInvD_Symb(y)/abs(gInvD_Symb(y))  
+	# println("s.(ys) = ", s.(ys))                         
+	#-===============================================================================
+	pl1 = 
+		plot(title=L"pl1:\ density\ f_Y(y) := fY.(ys)", titlefontsize=titlefontsize, permute=(:x, :y), linewidth=linewidth+1, legendfontsize=legendfontsize,
+		ylimits=(-1.0, 4.0), y2s, fY.(y2s), color=:red, 
+			 label=false, # L"pl1:density\ f_Y(y)", 
+			xlabel=L"Y", ylabel=L"f_Y(y)")
+	    # println("fY.(y2s) = ", fY.(y2s))
+	 	# println("ys[argmax(fY.(y2s))] = ", ys[argmax(fY.(y2s))])
+		#-----------------------------------------------------------
+		plot!(x4s, x -> modeY, linewidth=linewidth-1, color=:red, linestyle=:dash, label=false) #L"true\ mode\ \hat y = argmax(fY(ys)) = 0.91")
+		#-----------------------------------------------------------
+		annotate!(1.4, 0.93, text(L"true\ mode\ \hat y = ys[argmax(fY.(ys))] = 0.91", annotateFontSize))
+	#--------------------------------------------------------------------------------
+	pl2 = 
+		plot(title=L"pl2:\ derivative\ f'_Y(y) := fYD.(ys)", 
+		ys, fYD.(ys), permute=(:x, :y), color=:magenta, 
+		xlimits=(-0.001, 1.01), 
+		titlefontsize=titlefontsize, legendfontsize=legendfontsize, 		   linewidth=linewidth, label=L"pl2:derivative\ f'_Y(y)", ylabel=L"f'_Y(y)", xlabel=L"Y")
+		#-----------------------------------------------------------
+		plot!(x3s, x -> modeY, linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"true\ mode\ \hat y = ys[argmax(fY)] = 0.91")
+		#-----------------------------------------------------------
+		plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linewidth=linewidth-1, linestyle=:dash, label=L"constraint\ f'_Y(y)=0")
+		#-----------------------------------------------------------
+		annotate!(-40, 0.93, text(L"true\ mode\ \hat y = ys[argmax(fY.(ys)] = 0.91", annotateFontSize))
+	#-----------------------------------------------------------------------------
+	pl3 = 
+		plot(title=L"pl3_1: g^{-1}(y), pl3_2: |g^{-1}(y)|", ys, gInv.(ys), titlefontsize=titlefontsize, legendfontsize=legendfontsize, color=:orange, permute=(:x, :y), linewidth=linewidth+2, label=L"pl3_1: logit\ g^{-1}(y)", xlabel=L"Y", ylabel=L"X = g^{-1}(y), X = |g^{-1}(y)|")
+		#--------------------------------------------------------------------------
+		plot!(title=L"pl3_1: g^{-1}(y), pl3_2: |g^{-1}(y)|", ys, abs.(gInv.(ys)), titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl3_2: logit\ g^{-1}(y)")
+	#-----------------------------------------------------------------------------
+	pl4 = 
+		plot(
+		title=L"pl4:\forall y \in [0,1]:s(y) = \frac{g^{-1}(y)}{|g^{-1}(y)|}=1", 
+		ys, s.(ys),                # s.(ys) == gInv.(ys)./abs.(gInv.(ys)) 
+		titlefontsize=titlefontsize, legendfontsize=legendfontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, ylabel=L"X = s(y) = \frac{g^{-1}(y)}{|g^{-1}(y)|} = 1", xlabel=L"Y", label=L"pl4:\forall y \in [0,1]:s(y) = \frac{g^{-1}(y)}{|g^{-1}(y)|} = 1")
+	#-----------------------------------------------------------------------------
+	pl5 = 
+		plot(ys, gInvD_Symb.(ys), color=:orange, permute=(:x, :y), linewidth=linewidth+2, legendfontsize=legendfontsize, label=L"pl5_1:\ symbol.deriv.\ b_1=(g^{-1})'(y)", xlabel=L"Y", ylabel=L"X = (g^{-1})'(y)")
+		#-------------------------------------------------------------------------
+		plot!(ys, gInvD_Num.(ys), title=L"pl5:\ derivative\ b =(g^{-1})'(y)", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl5_2:\ numer.deriv.\ b_2=(g^{-1})'(y)")
+	#-----------------------------------------------------------------------------
+	pl6 = 
+		plot(ys, (gInvD_Symb.(ys)).^2, color=:orange, permute=(:x, :y), linewidth=linewidth+2, legendfontsize=legendfontsize, label=L"pl6_1:\ symbol.deriv.\ b_1^2=(g^{-1})'(y)^2", xlabel=L"Y", ylabel=L"X = (g^{-1})'(y)^2")
+		#-------------------------------------------------------------------------
+		plot!(ys, (gInvD_Num.(ys)).^2, title=L"pl6:\ derivative\ b^2=(g^{-1})'(y)^2", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl6_2:\ numer.deriv.\ b_2^2=(g^{-1})'(y)^2")
+	#-----------------------------------------------------------------------------
+	pl7 = 
+		plot(ys, fX_gInv(ys), permute=(:x, :y), color=:blueviolet, linewidth=linewidth+1, legendfontsize=legendfontsize, label = L"pl7:\ density:\ c = f_X(g^{-1}(y))")
+		#------------------------------------------------------------------------
+		plot!(ys, fXD_gInv.(ys), title=L"pl7:c=f_X(g^{-1}(y)), a=f'_X(g^{-1}(y))", titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth-1, label=L"pl7:\ derivative\ a = f'_X(g^{-1}(y))", xlabel=L"Y", ylabel=L"X = f_X(g^{-1}(y)), X = f'_X(g^{-1}(y))")
+		#-----------------------------------------------------------------
+		plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linewidth=linewidth-1, linestyle=:dash, label=L"constraint\ f'_X(g^{-1}(y)) = 0")
+	    #-----------------------------------------------------------------
+		plot!(x4s, x -> ys[argmax(fX_gInv.(ys))], linewidth=linewidth-1, color=:blueviolet, linestyle=:dash, label=L"naive\ \hat y = ys[argmax(fX\_gInv.(ys))] = 0.82")
+		#----------------------------------------------------------------
+		annotate!(0.0, 0.84, text(L"naive.mode\ \hat y = ys[argmax(fY.(ys))] = 0.82", annotateFontSize))
+	#-----------------------------------------------------------------------------
+	pl8 = 
+		plot(title=L"pl8:\ derivative\ d=(g^{-1})''(y)", 
+		ys, gInvDD_Symb.(ys), color=:orange, permute=(:x, :y), linewidth=linewidth+2, legendfontsize=legendfontsize, label=L"pl8_1:\ symbol.deriv.\ d_1=(g^{-1})''(y)", xlabel=L"Y", ylabel=L"X = d = (g^{-1})''(y)")
+		#-------------------------------------------------------------------------
+		plot!(ys, gInvDD_Num.(ys), titlefontsize=titlefontsize, color=:blueviolet, permute=(:x, :y), linewidth=linewidth, linestyle=:dash, label=L"pl8_2:\ numer.deriv.\ d_2=(g^{-1})''(y)")
+	#-----------------------------------------------------------------------------
+	pl9 =
+		let ys = 0.0+Δy:Δy:1.0-Δy
+			# println("fYD.(ys) = ", fYD.(ys))
+			# println("length(fYD.(ys)) = ", length(fYD.(ys)))
+			# println("fYD_reconstructed.(ys) = ", fYD_reconstructed.(ys))
+			# println("length(fYD_reconstructed.(ys)) = ", length(fYD_reconstructed.(ys)))
+			#------------------------------------------------------------
+			plot(title=L"pl9:\ fYD.(ys)", ys, fYD.(ys), permute=(:x, :y), label=L"fYD.(ys)")
+			#-----------------------------------------------------------
+			plot!(x3s, x -> modeY, linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"true\ mode\ \hat y = ys[argmax(fY)] = 0.91")
+			#-----------------------------------------------------------
+			annotate!(-40, 0.93, text(L"true\ mode\ \hat y = ys[argmax(fY.(ys)] = 0.91", annotateFontSize))
+			#-----------------------------------------------------------
+			plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linewidth=linewidth-1, linestyle=:dash, label=L"constraint\ f'_X(g^{-1}(y)) = 0")
+			#------------------------------------------------------------
+		end # let
+	#-----------------------------------------------------------------------------
+	pl10 =
+		let n = 12
+			ys = 0.0+n*Δy:Δy:1.0-n*Δy
+			plot(title=L"pl10:\ fYD_reconstructed.(ys)", ys, fYD_reconstructed.(ys), permute=(:x, :y), linestyle=:dash, label=L"fYD\_reconstructed.(ys)")
+			#-----------------------------------------------------------
+			plot!(x3s, x -> modeY, linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"true\ mode\ \hat y = ys[argmax(fY)] = 0.91")
+			#-----------------------------------------------------------
+			annotate!(-40, 0.93, text(L"true\ mode\ \hat y = ys[argmax(fY.(ys)] = 0.91", annotateFontSize))
+			#-----------------------------------------------------------
+			plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linewidth=linewidth-1, linestyle=:dash, label=L"constraint\ f'_X(g^{-1}(y)) = 0")
+		end # let
+	#-----------------------------------------------------------------------------
+	plot(pl1, pl2, pl3, pl4, pl5, pl6, pl7, pl8, pl9, pl10, layout=(5, 2), size=(800, 2000))
+end # function derivatives()
+
+# ╔═╡ a2aa8846-e540-4403-9da9-ad12b0622859
+derivatives()
 
 # ╔═╡ 2201195a-bc2d-4286-a580-81154bf64e87
 md"
@@ -1175,7 +1278,8 @@ md"
 
 # ╔═╡ a053117f-f2ff-49c0-9c7e-6f465a8e5bfb
 function fY_D_2nd()
-	ys               =  0.04:Δy:0.96
+	# ys               =  0.04:Δy:0.96
+	ys               =  0:Δy:1
 	y2s              =  0.01:Δy:0.50
 	xs               = -80.0:Δx:4.0
 	x2s              =  -4.5:Δx:4.0
@@ -1190,9 +1294,9 @@ function fY_D_2nd()
 	argMaxTermA      = find_zero(ys -> termA.(ys), 0.8)
 	#--------------------------------------------------------------------------------
 	# termB = derivative (g^{-1})'(y)^2
-	termB(ys)        = gInvD_Num.(ys).^2
+	termB(ys)        = (gInvD_Num.(ys)).^2
 	#--------------------------------------------------------------------------------
-	termAB(ys)       = fXD_gInv.(ys) .* gInvD_Num.(ys).^2
+	termAB(ys)       = termA(ys) .* termB(ys)
 	rootTermAB       = find_zero(ys -> termAB.(ys), 0.8)
 	#-------------------------------------------------------------------------------
 	# termC(y) = density f_X(g^{-1}(y)) := fX_gInv(y)
@@ -1206,7 +1310,7 @@ function fY_D_2nd()
 	termABCD(ys)     = termAB(ys) .+ termCD(ys)
 	rootTermABCD     = find_zero(ys -> termABCD.(ys), 0.9)
 	#-------------------------------------------------------------------------------
-	plA  = 
+	plA  =                                                                  # plot 1
 		plot(ys, termA,  permute=(:x, :y), title=L"term\ a:\ f'_X(g^{-1}(y))", titlefontsize=titlefontsize, color=:blueviolet, linewidth=linewidth, label=L"a = f'_X(g^{-1}(y))", xlabel=L"Y", ylabel=L"X=f'_X(g^{-1}(y))")
 		#
 		plot!([0.0, 0.0], [0.0, 1.0], color=:blueviolet, linestyle=:dash, linewidth=linewidth-1, label=L"constraint\ f'_X(g^{-1}(y)) = 0")
@@ -1219,10 +1323,10 @@ function fY_D_2nd()
 	    # 
 		annotate!(-1.5, 0.84, text(L"uncorrected\ (=naive)\ g(mode(X)) = 0.82", annotateFontSize))
 	#--------------------------------------------------------------------------------
-	plB  = 
+	plB  =                                                                   # plot 2
 		plot(ys, termB,  permute=(:x, :y), title=L"term\ b^2:\ (g^{-1})'(y)^2", titlefontsize=titlefontsize, color=:blueviolet, linewidth=linewidth, label=L"b^2 = (g^{-1})'(y)^2", xlabel=L"Y", ylabel=L"X=(g^{-1})'(y)^2")
 	#--------------------------------------------------------------------------------
-	plC = 
+	plC =                                                                    # plot 3
 		plot(ys, termC, permute=(:x, :y), title=L"term\ c:\ f_X(g^{-1}(y))", titlefontsize=titlefontsize, color=:blueviolet, linewidth=linewidth, label=L"c = f_X(g^{-1}(y))", xlabel=L"Y", ylabel=L"X=f_X(g^{-1}(y))")
 	    #--------------------------------------------------------
 		plot!(ys, y -> ys[argmax(termC.(ys))], linewidth=linewidth-1, color=:red, linestyle=:dash, label=L"naive\ mode\ \hat y = argmax(termC.(ys)) = 0.82")
@@ -1231,10 +1335,10 @@ function fY_D_2nd()
 	    #--------------------------------------------------------
 	    println("naive mode(Y) = argmax(termC.(ys))  = ", ys[argmax(termC.(ys))])
 	#--------------------------------------------------------------------------------
-	plD = 
+	plD =                                                                    # plot 4
 		plot(ys, termD, permute=(:x, :y), title=L"term\ d:\ (g^{-1})''(y)", titlefontsize=titlefontsize, color=:blueviolet, linewidth=linewidth, label=L"d = (g^{-1})''(y)", xlabel=L"Y", ylabel=L"X=(g^{-1})''(y)")
 	#--------------------------------------------------------------------------------
-	plAB = 
+	plAB =                                                                   # plot 5
 		plot(ys, termAB, permute=(:x, :y), ylimits=(-40, 30), title=L"term\ a\cdot b^2:\ f'_X(g^{-1}(y))\cdot (g^{-1})'(y)^2", titlefontsize=titlefontsize, color=:blueviolet, linewidth=linewidth-1, label=L"a\cdot b^2 = f'_X(g^{-1}(y))\cdot (g^{-1})'(y)^2", xlabel=L"Y", ylabel=L"X = f'_X(g^{-1}(y))\cdot (g^{-1})'(y)^2")
 		#
 		println("find_zero(ys -> termAB.(ys), 0.8)   = ", rootTermAB)
@@ -1247,17 +1351,10 @@ function fY_D_2nd()
 	    #
 		annotate!(-1.5, 0.84, text(L"uncorrected\ (=naive)\ g(mode(X)) = 0.82", annotateFontSize))
 	#--------------------------------------------------------------------------------
-	plCD = 
+	plCD =                                                                   # plot 6
 		plot(ys, ys -> termCD.(ys), permute=(:x, :y), title=L"term\ c \cdot d:\ f_X(g^{-1}(y)) \cdot (g^{-1})''(y)", titlefontsize=titlefontsize, color=:blueviolet, linewidth=linewidth-1, label=L"c \cdot d:\ f_X(g^{-1}(y)) \cdot (g^{-1})''(y)", xlabel=L"Y", ylabel=L"X = f_X(g^{-1}(y)) \cdot (g^{-1})''(y)")
 	#--------------------------------------------------------------------------------
-	plABplCD =
-		plot(ys, termAB, permute=(:x, :y), ylimits=(-40, 30), title=L"term\ a\cdot b^2", titlefontsize=titlefontsize, color=:blueviolet, linewidth=linewidth-1, label=L"a\cdot b^2 = f'_X(g^{-1}(y))\cdot ((g^{-1})'(y))^2", xlabel=L"Y", ylabel=L"X = f'_X(g^{-1}(y))\cdot ((g^{-1})'(y))^2")
-	    #------------------------------------------------------------
-		plot!(ys, ys -> termCD.(ys), permute=(:x, :y), title=L"term\ c \cdot d", titlefontsize=titlefontsize, color=:blueviolet, linewidth=linewidth-1, label=L"c \cdot d =\ f_X(g^{-1}(y)) \cdot (g^{-1})''(y)", xlabel=L"Y", ylabel=L"X = f_X(g^{-1}(y)) \cdot (g^{-1})''(y)")
-		#------------------------------------------------------------
-		plot!([0.0, 0.0], [0.0, 1.0], color=:blue, linestyle=:dash, linewidth=linewidth-1, label=L"f'_Y(y) = 0")
-	#--------------------------------------------------------------------------------
-	plABCD =
+	plABCD =                                                                # plot 7
 		plot(ys, ys -> termABCD.(ys), permute=(:x, :y), ylimits=(-40, 30), title=L"deriv.: f'_Y(y) = a \cdot b^2 + c \cdot d", titlefontsize=titlefontsize, color=:red, linewidth=linewidth, label=L"f'_Y(y) = a \cdot b^2 + c \cdot d")
 	    #
 		plot!(ys, fYD.(ys), permute=(:x, :y), color=:green, linewidth=linewidth-1, label=L"corrected\ derivative\ f'_Y(y):=fYD.(ys)")
@@ -1272,9 +1369,9 @@ function fY_D_2nd()
 	    # argMaxTermABCD = find_zero(ys -> termABCD.(ys), 0.82)
 		println("find_zero(ys -> termABCD.(ys), 0.9) = ", rootTermABCD)
 		#
-		# plot!([rootTermABCD, rootTermABCD], [-40.0, 30.0], permute=(:x, :y), color=:red, linestyle=:dash, linewidth=linewidth-1, label=L"rootTermABCD")
+		plot!([rootTermABCD, rootTermABCD], [-40.0, 30.0], permute=(:x, :y), color=:red, linestyle=:dash, linewidth=linewidth-1, label=L"rootTermABCD")
 	#-------------------------------------------------------------------------------
-	plot(plA, plB, plC, plD, plAB, plCD, plABplCD, plABCD, layout=(4,2), size=(800, 2000), ylimits=(-0.1, 1.01))
+	plot(plA, plB, plC, plD, plAB, plCD, plABCD, layout=(4,2), size=(800, 2000), ylimits=(-0.1, 1.01))
 	#-------------------------------------------------------------------------------
 end # function fY_D_2nd()
 
@@ -1289,11 +1386,11 @@ In a *change of variable* problem you transform a (*random*) variable in a *line
 
 $mode(Y) ≠ g(mode(X)).$
 
-In that case you have to compute $mode(Y)$ by a method which avoids the *direct* application of the transformation $g(.)$. Instead, the *shape* of the *transformed* density $f_Y(y)$ is examined.
+In that case you have to compute $mode(Y)$ by methods which avoid the *direct* application of the transformation $g(.)$. Instead, the *shape* of the *transformed* density $f_Y(y)$ or of its *derivative* $f'_Y(y)$ are examined.
 
-For the first alternative we need only $f_Y(y)$ and the $argmax(f_Y(y))$ function. The second alternative is based on its *derivative* $f'_Y(y)$ and by solving for the *root* of the zero-set derivative $f'_Y(y) = 0$. Both alternatives generate the correct value $mode(Y)= \hat y$.
+For the *first* alternative we need only $f_Y(y)$ and the $argmax(f_Y(y))$ function. The *second* alternative is based on $f'_Y(y)$ and by solving for the *root* of the constraint $f'_Y(y) = 0$. Both alternatives generate the correct value $mode(Y)= \hat y$.
 
-The *change of variable* problem in the context of *pmf*s has an analogue to an everyday toy problem. *Pmf*s are like long balloons with constant volume. The longer they are stretched, the smaller their diameter (= density) becomes. 
+The *change of variable* problem in the context of *pmf*s has an analogue to an everyday toy problem. *Changing variables* is like *stretching* balloons. *Balloons* are the analogon for *pmf*s with *constant* volume. The longer they are stretched, the smaller their diameter (= density) becomes. 
 
 "
 
@@ -3222,7 +3319,7 @@ version = "1.13.0+0"
 # ╟─1659e07b-966b-4514-8769-44f10af6597d
 # ╟─20a531ef-73a8-4c81-b349-7ffc4793ca92
 # ╟─22f653bd-3f02-4f1d-825b-11ef663db9bf
-# ╠═190d06f0-79c5-492d-b523-dd67b619aead
+# ╟─190d06f0-79c5-492d-b523-dd67b619aead
 # ╟─f888453b-7732-46c1-aa1e-d09ce4f49b50
 # ╟─7c5230e6-b634-4f83-b9b6-3d68c09b18a0
 # ╟─afb33701-ae29-4cc5-90aa-f5070a4480a6
@@ -3235,7 +3332,7 @@ version = "1.13.0+0"
 # ╟─be819c32-d007-4547-91b0-8b1a29f6752f
 # ╟─ab462070-74e3-4f16-b1e3-d119418ee376
 # ╟─c1bd9c0c-5422-421c-892c-a581d778ad82
-# ╟─45d605af-274b-48ac-82a3-0124714d760d
+# ╠═45d605af-274b-48ac-82a3-0124714d760d
 # ╟─af6065e1-b290-4cfb-948c-efb25b8c3fbe
 # ╟─e56da698-1ec4-4df4-9781-b6b83e1c97d6
 # ╟─d946c621-6ab3-45ea-bb94-e4dc46b62359
@@ -3246,21 +3343,21 @@ version = "1.13.0+0"
 # ╠═f2befe92-8c9e-4551-bd85-471e8191e495
 # ╟─81c9024f-1f92-4275-96df-d81fd6dea240
 # ╟─405b87a5-0ab0-42ed-aef7-15b35f822d94
-# ╠═e779b696-5f18-46b0-89ac-50629dd149bd
-# ╟─4c522ae1-16a7-463c-8366-427fb299af69
-# ╟─e991a48d-5d63-4891-99bb-51d29cfd03e6
-# ╠═41b1196e-9f0a-4398-b5af-f442c0be2715
-# ╟─e60fb090-ea7b-4f27-8bb3-e4d9704f09d3
-# ╟─d9b644a4-c59e-40e7-beb3-d7aedf5c2a1e
-# ╟─a2aa8846-e540-4403-9da9-ad12b0622859
+# ╟─e779b696-5f18-46b0-89ac-50629dd149bd
 # ╟─34390199-86bc-4d48-a91c-2d5847fbabf9
 # ╠═fc82f0f5-d850-44f9-9726-9bccea28df3f
 # ╠═d952f790-749c-48d0-a562-4e90393f0d65
 # ╠═6be4a020-234c-4600-a7fa-84ed6504718a
 # ╠═f9053506-b821-41d8-82a1-fc71a01b6d45
 # ╟─9f52849a-621e-4e8e-a5a5-d711e301c617
-# ╟─064fbc16-56d1-416e-90c0-24a60ebeaba0
+# ╠═064fbc16-56d1-416e-90c0-24a60ebeaba0
+# ╟─4c522ae1-16a7-463c-8366-427fb299af69
+# ╟─e991a48d-5d63-4891-99bb-51d29cfd03e6
+# ╠═41b1196e-9f0a-4398-b5af-f442c0be2715
+# ╟─e60fb090-ea7b-4f27-8bb3-e4d9704f09d3
 # ╟─78581f63-cbf5-4ddc-adcd-a501548d43a7
+# ╟─d9b644a4-c59e-40e7-beb3-d7aedf5c2a1e
+# ╠═a2aa8846-e540-4403-9da9-ad12b0622859
 # ╟─2201195a-bc2d-4286-a580-81154bf64e87
 # ╠═a053117f-f2ff-49c0-9c7e-6f465a8e5bfb
 # ╠═fd53d5cb-e000-4144-9cb1-696aa962659c
