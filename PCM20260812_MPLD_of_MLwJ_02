@@ -35,7 +35,7 @@ md"
 ====================================================================================
 #### MPLD of MLwJ, ch.02, [Norms, and Curse of Dimensionality](https://platform.juliahub.com/ui/Notebooks/jddeng/MLwithJulia-demos/ch2-mink-dimc.jl)
 ##### file: PCM20260812\_MPLD\_of\_MLwJ\_02
-##### Julia/Pluto.jl: 1.12.7/1.0.3 by PCM *** 2026/08/23 ***
+##### Julia/Pluto.jl: 1.12.7/1.0.3 by PCM *** 2026/08/27 ***
 
 ====================================================================================
 "
@@ -45,15 +45,20 @@ md"
 ---
 ##### 0. Introduction
 
-- norm
-- *Minkowsky* norm, city-block norm
-- curse of dimensionality
+This chapter aims to show that the complexity of a problem increases *nonlinearly* with the dimensionality *d* of its parameter space. This is referred to in the literature as the *curse of dimensionality*.
+
 "
 
 # ╔═╡ a1ec07b1-9e69-4eaa-a3e2-318fe207ce13
 md"
 ---
 ##### 1. Topics
+
+- norm
+- *Minkowsky* norm, city-block norm
+- *curse of dimensionality*
+- probability of *margin* of *flat* uni- or d-dimensional *pdf*
+- probability of *margin* of *centered* uni- or d-dimensional *pdf*
 "
 
 # ╔═╡ a38530f2-d1a9-4d11-88d6-7a0f377be2a3
@@ -67,8 +72,126 @@ md"
 ---
 ##### 3. Code
 ---
-###### 3.1 Minkowsky Norm
+###### *Metric Space*
+*A metric space ($\mathcal{X}, d)$ is a set $\mathcal{X}$ together with a metric $d$ on the set.* (Ye, 2022, p.5) 
+
+###### *Metric* or *Distance*
+*A metric is a function that defines a concept of distance between any two members of the set, which is formally defined as follows.* (Ye, 2022, p.5)
+
+*A metric on a set $\mathcal{X}$ is a function called the distance $d$ :*
+
+$\mathcal{X}\times \mathcal{X} \rightarrow \mathcal{R}_+,$ 
+
+*where $\mathcal{R}_+$ is the set of non-negative real numbers. For all $x, y, z ∈ \mathcal{X}$, this function is required to satisfy the following conditions:*
+
+- *1. d(x, y) ≥ 0 (non-negativity).*
+- *2. d(x, y) = 0 if and only if x = y.*
+- *3. d(x, y) = d(y, x) (symmetry).*
+- *4. d(x, z) ≤ d(x, y) + d(y, z) (triangle inequality).*
+
 "
+
+# ╔═╡ 10cf2762-469e-4b71-8f7c-fc887e5ecf64
+md"
+---
+###### Special Distance Functions
+###### $L_0$ Distance
+
+$L_0(\mathbf{x, y}) = d_0(\mathbf{x, y}) = \sum_{i=1}^d |x_i - y_i|^0\;;\;\text {(number of different pairs)}$
+
+###### *City-block* or *Manhattan* Distance $L_1$
+
+$L_1(\mathbf{x, y}) = d_1(\mathbf{x, y}) = \sum_{i=1}^d |x_i - y_i|$
+
+###### *Euclidean* Distance $L_2$
+
+$L_2(\mathbf{x, y}) = d_2(\mathbf{x, y}) = \left(\sum_{i=1}^d (x_i - y_i)^2\right)^{1/2}$
+
+###### *Minkowski* Distance $L_p$
+
+$L_p(\mathbf{x, y}) = d_p(\mathbf{x, y}) = \left(\sum_{i=1}^d |x_i - y_i|^p\right)^{1/p}$
+
+###### $L_\infty$ Distance
+
+$L_\infty(\mathbf{x, y}) = max(x_i - y_i)$
+"
+
+# ╔═╡ f2a684f1-5492-479e-8f6c-40ebb55452a6
+md"
+###### *General* distance function $L_p = dist(.,.,.)$
+"
+
+# ╔═╡ a667c957-9083-4645-a0a2-585049da97e0
+function dist(v1::Vector, v2::Vector, p)
+	p == 0 || p == 0 ? 
+		sum(abs.(v1 - v2) .^p) : 
+		(sum(abs.(v1 - v2) .^p))^(1/p)
+end # function dist
+
+# ╔═╡ 81fa4ef5-4c43-4e95-9494-ee9e9fe12936
+const x = [0, 1]
+
+# ╔═╡ 4c1bfa57-f8f1-4b7f-8b21-d1f51023379b
+const y = [1, 0]
+
+# ╔═╡ 651f4ac1-4f96-4410-9268-afc1fdd9f7d0
+dist(x, y, 0)                        # number of different pairs
+
+# ╔═╡ e0c92183-3d29-4deb-90ef-8db8d97636ad
+dist(x, y, 0.0)                      # number of different pairs
+
+# ╔═╡ ce62389f-6a2c-4b8a-8bff-67a82e784cfd
+dist(x, y, 1/2)                      # fractional distance
+
+# ╔═╡ 7a1d93d9-ad7b-461e-9ebf-4648497d67ed
+dist(x, y, 1)                        # city block distance
+
+# ╔═╡ 9528c30d-8abb-42fc-b198-e2de9346e9ae
+dist(x, y, 2)                        # Euklidean distance
+
+# ╔═╡ 1bac214c-c32e-42dd-8750-4522482e0540
+dist(x, y, 10E0) 
+
+# ╔═╡ 8af61c81-31c4-4f8b-9a74-434ea56c512c
+dist(x, y, 10E2) 
+
+# ╔═╡ d43377e7-33f6-4077-bfd5-73403317f035
+dist(x, y, 10E5) 
+
+# ╔═╡ 42a0df95-c959-4ee2-a40c-17131123ec8f
+dist2(v1::Vector, v2::Vector) = dist(v1, v2, 2)
+
+# ╔═╡ faac2588-b19f-4989-8fb0-7e11092ea9c8
+dist1(v1::Vector, v2::Vector) = dist(v1, v2, 1)
+
+# ╔═╡ 5a64cc5c-cb18-4142-be70-e4f26ef63b37
+distf(v1::Vector, v2::Vector) = dist(v1, v2, 0.5)
+
+# ╔═╡ d6d58bab-66fd-4a9d-933b-e67ee71ecd24
+md"---
+###### Norm
+
+*A norm is defined as the distance between a data point and the origin* (Deng, 2026, p.20). More formally the norm *‖ · ‖ is a real-valued function defined on the vector
+space that has the following properties:*
+
+*1. ‖x‖ ≥ 0, and ‖x‖ = 0 if and only if x = 0.*
+
+*2. ‖αx‖ = |α|‖x‖ for any scalar α.*
+
+*3. Triangular inequality: ‖x + y‖ ≤ ‖x‖ + ‖y‖ for any vectors x and y.* (Ye, 2022, p.5)
+
+###### *Euclidean* Norm
+
+$||\mathbf x||_2 =  L_2(\mathbf{x, 0}) = <\mathbf{x,x}>^{1/2} = \mathbf{x'x}^{1/2}$
+
+###### *Minkowski* Norm
+
+$||\mathbf x||_p = L_p(\mathbf{x, 0})$
+
+"
+
+# ╔═╡ 9d93a840-e39c-4164-baed-2efaf6e216d3
+(x'*x)^(1/2)
 
 # ╔═╡ faf87b0d-febd-4d80-aa46-6c06c5d88707
 # Finds y given x and p, so that Lp==1
@@ -76,11 +199,17 @@ function upper_orbit_unit_Lp(x, p)
     y = (1 - abs(x)^p)^(1/p)
 end # function upper_orbit_unit_Lp
 
+# ╔═╡ e05418c1-44d8-4ede-9417-0cdd25c03117
+# Finds y given x and p, so that Lp==-1
+function lower_orbit_unit_Lp(x, p)
+	y = -(1 - abs(x)^p)^(1/p)
+end # function lower_orbit_unit_Lp
+
 # ╔═╡ c58dee71-20d5-42c6-9cf8-f43362d7dda3
 xs = -1:0.01:1
 
 # ╔═╡ 2252d60a-4e60-491d-96be-8bef3d66981e
-@bind p1 Slider(0.0:0.1:2.0)
+@bind p1 Slider(0.0:0.1:1.0)
 
 # ╔═╡ 2dcd3054-7da0-4a2a-a5fd-4ad2a9a3c92d
 upper_orbit_unit_Lp.(xs, p1)
@@ -95,31 +224,38 @@ p1
 @bind p2 Slider(0:0.1:2)
 
 # ╔═╡ 563e8c31-6c82-4c1e-9f3e-68461d38e2ec
-let #----------------------------------------------------------------------
-	# Finds y given x and p, so that Lp==-1
-	function lower_orbit_unit_Lp(x, p)
-	    y = -(1 - abs(x)^p)^(1/p)
-	end # function upper_orbit_unit_Lp
-	#----------------------------------------------------------------------
+begin
 	plot(xs, upper_orbit_unit_Lp.(xs, p2), aspect_ratio=:equal, label="")
 	plot!(xs, lower_orbit_unit_Lp.(xs, p2), aspect_ratio=:equal, label="")
-end # let
+end # begin
 
 # ╔═╡ 228d56d1-e23c-49d1-9ef9-2da4b7ab01cf
 p2
 
+# ╔═╡ 6e5ad0c3-e6e5-4db4-9fa8-50bb3f13819b
+function minkowskiPlots()
+	ps = [1/4, 1/2, 1.0, 2.0]
+	plot0 = plot(title=L"l_p\ norms\ using\ different\ p")
+	for p in ps
+		plot!(plot0, xs, upper_orbit_unit_Lp.(xs, p), aspect_ratio=:equal, label="$p")
+		plot!(plot0, xs, lower_orbit_unit_Lp.(xs, p), aspect_ratio=:equal, label="$p")
+	end # for p
+	plot(plot0)
+end # function minkowskiPlots
+
+# ╔═╡ 5ca73a01-7afa-47e6-94a4-4fefcc2d425b
+minkowskiPlots()
+
 # ╔═╡ c569926f-1b7d-4f6b-bf92-4931b3931c2c
 md"
 ---
-##### 3.2 Curse of Dimensionality
+###### 3.2 Curse of Dimensionality
 
 The concept of the *curse of dimensionality* was first formulated by *Bellman* (1957). In the context of *high-dimensional probability spaces*, it has been discussed by *Bishop* (2006), *Bishop & Bishop* (2024), and *Vershynin* (2026), among others. It can be shown that the *probability* that a *random point* falls on a *boundary* of thickness $ϵ$ approaches $1$ as the *dimensionality* $d$ of the *probability density function* (*pdf*) of the unit *hypercube* approaches $∞$.
 
-Translated with DeepL.com (free version)
-
 ###### Points on the Edge
 
-*The following code plots out the probability of having data points lying within a thin $\epsilon = 0.01$ margin along any side of a $d$-dim hypercube with side $1$ length of 1:* 
+*The following code plots out the probability of having data points lying within a thin $ϵ$ margin along any side of a $d$-dim hypercube with side $1$ length of 1:* 
 
 $volume_{margin} = volume_{unit\ hypercube} - volume_{inner\ hypercube},$
 
@@ -127,7 +263,7 @@ $volume_{margin} = 1^d - (1 - 2\epsilon)^d = 1 - (1 - 2\epsilon)^d,$
 
 $P(x \in margin) = 1 - (1 - 2\epsilon)^d.$
 
-*The probability approaches 1.0 very rapidly as $d \rightarrow \infty$.* [(Deng, 2026)](https://platform.juliahub.com/ui/Notebooks/jddeng/MLwithJulia-demos/ch2-mink-dimc.jl). The “*curse of dimensionality*” here is that a high-dimensional hypercube consists almost entirely of surfaces.
+*The probability approaches 1.0 very rapidly as $d \rightarrow \infty$.* [(Deng, 2026)](https://platform.juliahub.com/ui/Notebooks/jddeng/MLwithJulia-demos/ch2-mink-dimc.jl). The '*curse of dimensionality*' means here that a high-dimensional hypercube consists almost entirely of a *d-dim surface*.
 
 
 "
@@ -149,6 +285,12 @@ let ϵ    = 0.1
       fillcolor = :red, label = L"probability\ [0, ϵ]")
 	plot!(x_fill_top, f.(x_fill_top), fillrange = 0, fillalpha = 0.3,
       fillcolor = :red, label = L"probability\ [1-ϵ, 1]")
+	annotate!(ϵ/2, 0.056, text("P =", 10))
+	annotate!(ϵ/2, 0.05, text("ϵ*0.1", 10))
+	annotate!(1-ϵ/2, 0.056, text("P =", 10))
+	annotate!(1-ϵ/2, 0.050, text("ϵ*0.1", 10))
+	annotate!(0.5, 0.056, text("P =", 10))
+	annotate!(0.5, 0.050, text("1 - 2ϵ*0.1", 10))
 end # let
 
 # ╔═╡ 30b2f9ec-8fe3-413c-8c85-e1b6a1a4d888
@@ -285,10 +427,70 @@ let ϵ  = 0.01
 	plot!([1-(1-2ϵ)^d for d in ds], linewidth=2, label=L"uniform:1-(1-2ϵ)^d")
 end # let
 
+# ╔═╡ ae9eb239-2452-481a-b862-eb515a9b2a68
+md"
+This plot shows *that while the general trend remains the same, i.e., the probability of having data points along the edges will eventually increase to 1.0, it takes a much higher dimensionality to do so* when the *pdf* switches from a uniform to a centered pdf. (Deng, 2026)
+"
+
+# ╔═╡ 8afba466-7326-4ff1-b3e0-687c0c58f1e2
+md"
+---
+###### 3.3 Nearest Neighbour (NN) vs Farthest Neighbour (FN) Ratio
+
+*Another surprising phenomenon in the high-dimensional space is that the ratio between the nearest neighbour and the farthese neighbour will approach 1.0 !* (Deng, 2026)
+"
+
+# ╔═╡ aff511c5-eb2c-48dd-834c-deb26be39fe0
+md"
+*A function for NN/FN ratio calculation in a simple scenario: data within $d$-dim cube with all data points' coordinate randomly (uniformly) distributed betwen (0,1).* (Deng, 2026)
+"
+
+# ╔═╡ 3ebeeb38-4f53-40d4-81ab-95ff3959ff9f
+function nn_vs_fn(d, n, dist)    # nearest neighbour vs farthest neighbour
+	# d = dimensionality
+	# n = number of data points
+	nRuns  = 20
+	scores = []
+	for t in 1:nRuns    # collect ratio for nRuns
+		X = rand(d, n)  # random uniform distributed data cube
+		                  # d dimensions x n data points
+		dists = []
+		query = rand(d) # random query point
+		for i in 1:n    # loop over data points
+			push!(dists, dist(query, X[:, i]))
+		end
+		push!(scores, minimum(dists)/maximum(dists))
+	end # for t
+	sum(scores)/length(scores) # get average
+end
+
+# ╔═╡ d34089d4-fd9e-4698-b9d7-7e0c99db1156
+nn_vs_fn(2, 100, dist2)
+
+# ╔═╡ 84cedb75-e635-4943-bb47-8d0a60327633
+nn_vs_fn(2, 100, dist1)
+
+# ╔═╡ 6fe3d92a-e8d4-4839-a858-27f81cfac2bd
+nn_vs_fn(2, 100, distf)
+
+# ╔═╡ a3ed5773-cb12-49f8-9467-dc77062614d5
+begin
+	r2 = []; r1 = []; rf = []
+	n = 100
+	for d in 1:10:1000
+		push!(r2, nn_vs_fn(d, n, dist2))
+		push!(r1, nn_vs_fn(d, n, dist1))
+		push!(rf, nn_vs_fn(d, n, distf))
+	end # for d
+	plot(1:10:1000, [r2 r1 rf], label=[L"L2" L"L1" L"Lf"], xlabel=L"d", ylabel=L"ratio")
+end
+
 # ╔═╡ 307520ad-f13c-4cf0-ab08-b6be0a12c232
 md"
 ---
 ##### 4. Summary
+
+In this context, the *curse of dimensionality* means that the higher the dimensionality $d$, the greater the probability that a random point will fall on a surface of thickness $ϵ$. In short, this means that a high-dimensional *hypercube* consists almost entirely of *surfaces*.
 "
 
 # ╔═╡ a3f818af-f800-4b81-a7e5-0f1f189248be
@@ -299,9 +501,11 @@ md"
 
 - **Bellman, R.**,  *Dynamic Programming*, Princeton, NJ: Princeton University Press, 1957
 - **Bishop, Chr.M.**, [*Pattern Recognition and Machine Learning*, 2006](https://www.cs.uoi.gr/~arly/courses/ml/tmp/Bishop_book.pdf); last visit 2026/08/18
-- [**Bishop, Chr.M. & Bishop, H.**, *Deep Learning: Foundations and Concepts*](https://www.bishopbook.com/), Springer, 2024
+- **Bishop, Chr.M. & Bishop, H.**, [*Deep Learning: Foundations and Concepts*](https://www.bishopbook.com/), Springer, 2024
+- **Deng, J.D.**; *Machine Learning with Julia: An Algorithmic Exploration*; Singapore: Springer, 2026
 - **Deng, J.D.**; [Norms, and Curse of Dimensionality](https://platform.juliahub.com/ui/Notebooks/jddeng/MLwithJulia-demos/ch2-mink-dimc.jl); last visit 2026/08/12
-- **Vershynin, R.**, [*High-Dimensional Probability*, 2026](https://webapps.math.uci.edu/~rvershyn/papers/HDP-book/HDP-2.pdf); last visit 2026/08/18
+- **Vershynin, R.**; [*High-Dimensional Probability*, 2026](https://webapps.math.uci.edu/~rvershyn/papers/HDP-book/HDP-2.pdf); last visit 2026/08/18
+- **Ye, J. Ch.**; *Geometry of Deep Learning*, Singapore: Springer, 2022
 
 "
 
@@ -1602,15 +1806,36 @@ version = "1.13.0+0"
 # ╟─a38530f2-d1a9-4d11-88d6-7a0f377be2a3
 # ╠═b4ba4ca2-68c6-401e-8256-b4c4cba855f3
 # ╟─42b65b89-8786-4cb1-a57e-64d4b3d4eb78
+# ╟─10cf2762-469e-4b71-8f7c-fc887e5ecf64
+# ╟─f2a684f1-5492-479e-8f6c-40ebb55452a6
+# ╠═a667c957-9083-4645-a0a2-585049da97e0
+# ╠═81fa4ef5-4c43-4e95-9494-ee9e9fe12936
+# ╠═4c1bfa57-f8f1-4b7f-8b21-d1f51023379b
+# ╠═651f4ac1-4f96-4410-9268-afc1fdd9f7d0
+# ╠═e0c92183-3d29-4deb-90ef-8db8d97636ad
+# ╠═ce62389f-6a2c-4b8a-8bff-67a82e784cfd
+# ╠═7a1d93d9-ad7b-461e-9ebf-4648497d67ed
+# ╠═9528c30d-8abb-42fc-b198-e2de9346e9ae
+# ╠═1bac214c-c32e-42dd-8750-4522482e0540
+# ╠═8af61c81-31c4-4f8b-9a74-434ea56c512c
+# ╠═d43377e7-33f6-4077-bfd5-73403317f035
+# ╠═42a0df95-c959-4ee2-a40c-17131123ec8f
+# ╠═faac2588-b19f-4989-8fb0-7e11092ea9c8
+# ╠═5a64cc5c-cb18-4142-be70-e4f26ef63b37
+# ╟─d6d58bab-66fd-4a9d-933b-e67ee71ecd24
+# ╠═9d93a840-e39c-4164-baed-2efaf6e216d3
 # ╠═faf87b0d-febd-4d80-aa46-6c06c5d88707
+# ╠═e05418c1-44d8-4ede-9417-0cdd25c03117
 # ╠═c58dee71-20d5-42c6-9cf8-f43362d7dda3
 # ╠═2dcd3054-7da0-4a2a-a5fd-4ad2a9a3c92d
 # ╠═55edca22-2c57-4a4d-9fc4-667a4961fb36
-# ╠═2253f57f-0634-49ec-8863-f9cee3418e94
 # ╠═2252d60a-4e60-491d-96be-8bef3d66981e
+# ╠═2253f57f-0634-49ec-8863-f9cee3418e94
 # ╠═563e8c31-6c82-4c1e-9f3e-68461d38e2ec
-# ╠═228d56d1-e23c-49d1-9ef9-2da4b7ab01cf
 # ╠═d7bf5df4-263b-4eec-a752-4d13b420f595
+# ╠═228d56d1-e23c-49d1-9ef9-2da4b7ab01cf
+# ╠═6e5ad0c3-e6e5-4db4-9fa8-50bb3f13819b
+# ╠═5ca73a01-7afa-47e6-94a4-4fefcc2d425b
 # ╟─c569926f-1b7d-4f6b-bf92-4931b3931c2c
 # ╟─313e1b0b-0d23-4466-9b00-0b41be79e722
 # ╟─30b2f9ec-8fe3-413c-8c85-e1b6a1a4d888
@@ -1621,6 +1846,14 @@ version = "1.13.0+0"
 # ╟─fd9caeef-2854-411c-bc07-35ff7d12013b
 # ╟─0eeab907-7825-4bd0-a70c-486ec5918a0d
 # ╟─84ea209a-2dfa-4592-98ec-d7109ec1814e
+# ╟─ae9eb239-2452-481a-b862-eb515a9b2a68
+# ╟─8afba466-7326-4ff1-b3e0-687c0c58f1e2
+# ╟─aff511c5-eb2c-48dd-834c-deb26be39fe0
+# ╠═3ebeeb38-4f53-40d4-81ab-95ff3959ff9f
+# ╠═d34089d4-fd9e-4698-b9d7-7e0c99db1156
+# ╠═84cedb75-e635-4943-bb47-8d0a60327633
+# ╠═6fe3d92a-e8d4-4839-a858-27f81cfac2bd
+# ╠═a3ed5773-cb12-49f8-9467-dc77062614d5
 # ╟─307520ad-f13c-4cf0-ab08-b6be0a12c232
 # ╟─a3f818af-f800-4b81-a7e5-0f1f189248be
 # ╟─ad01f678-05a5-4eec-be93-1902a7badb70
